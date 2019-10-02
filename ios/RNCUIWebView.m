@@ -20,6 +20,7 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingError;
 @property (nonatomic, copy) RCTDirectEventBlock onShouldStartLoadWithRequest;
 @property (nonatomic, copy) RCTDirectEventBlock onMessage;
+@property (nonatomic, copy) RCTDirectEventBlock onHtmlChanged;
 
 @end
 

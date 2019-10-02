@@ -7,10 +7,12 @@ import android.content.Context;
 
 import com.facebook.react.uimanager.UIManagerModule;
 
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
@@ -28,8 +30,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.text.TextUtils;
+import android.view.ActionMode;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
+import android.view.ViewParent;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
@@ -62,6 +69,7 @@ import com.facebook.react.uimanager.events.ContentSizeChangeEvent;
 import com.facebook.react.uimanager.events.Event;
 import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
+import com.reactnativecommunity.webview.events.TopHtmlChangedEvent;
 import com.reactnativecommunity.webview.events.TopLoadingErrorEvent;
 import com.reactnativecommunity.webview.events.TopLoadingFinishEvent;
 import com.reactnativecommunity.webview.events.TopLoadingStartEvent;
@@ -76,6 +84,9 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static android.view.ActionMode.TYPE_FLOATING;
+import static android.view.ActionMode.TYPE_PRIMARY;
 
 /**
  * Manages instances of {@link WebView}
@@ -142,6 +153,22 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
         reactWebView.callInjectedJavaScript();
 
         emitFinishEvent(webView, url);
+        if (((RNCWebView) webView).highlightEnabled) {
+          //Inject Rangy Javascript files
+          try {
+            final InputStream in = webView.getContext().getAssets().open("rangy.js");
+            int size = in.available();
+            byte[] buffer = new byte[size]; //declare the size of the byte array with size of the file
+            in.read(buffer); //read file
+            in.close(); //close file
+            String rangyScript = new String(buffer);
+            ((RNCWebView) webView).evaluateJavascriptWithFallback(rangyScript);
+
+          } catch (final Throwable tx) {
+
+          }
+        }
+
       }
     }
 
@@ -226,8 +253,120 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
   protected static class RNCWebView extends WebView implements LifecycleEventListener {
     protected @Nullable String injectedJS;
     protected boolean messagingEnabled = false;
+    protected boolean highlightEnabled = false;
     protected @Nullable RNCWebViewClient mRNCWebViewClient;
     protected boolean sendContentSizeChangeEvents = false;
+    private ActionMode.Callback mActionModeCallback;
+
+
+    public static StringBuffer removeUTFCharacters(String data) {
+      Pattern p = Pattern.compile("\\\\u(\\p{XDigit}{4})");
+      Matcher m = p.matcher(data);
+      StringBuffer buf = new StringBuffer(data.length());
+      while (m.find()) {
+        String ch = String.valueOf((char) Integer.parseInt(m.group(1), 16));
+        m.appendReplacement(buf, Matcher.quoteReplacement(ch));
+      }
+      m.appendTail(buf);
+      return buf;
+    }
+
+    @Override
+    public ActionMode startActionModeForChild(View originalView, ActionMode.Callback callback) {
+      if (highlightEnabled) {
+        mActionModeCallback = new CustomActionModeCallback();
+        return super.startActionModeForChild(originalView, mActionModeCallback);
+      }
+      return super.startActionModeForChild(originalView, callback);
+    }
+
+    @Override
+    public ActionMode startActionMode(ActionMode.Callback callback) {
+      if (highlightEnabled) {
+        mActionModeCallback = new CustomActionModeCallback();
+        return super.startActionMode(mActionModeCallback);
+      }
+      return super.startActionMode(callback);
+    }
+
+    @Override
+    public ActionMode startActionMode(ActionMode.Callback callback, int type) {
+      if (highlightEnabled) {
+        mActionModeCallback = new CustomActionModeCallback();
+        return super.startActionMode(mActionModeCallback, 0);
+      }
+      return super.startActionMode(callback, type);
+    }
+
+
+    private class CustomActionModeCallback implements ActionMode.Callback {
+
+      // Called when the action mode is created; startActionMode() was called
+      @Override
+      public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        // Inflate a menu resource providing context menu items
+        MenuInflater inflater = mode.getMenuInflater();
+        inflater.inflate(R.menu.custom_menu, menu);
+        return true;
+      }
+
+      // Called each time the action mode is shown.
+      // Always called after onCreateActionMode, but
+      // may be called multiple times if the mode is invalidated.
+      @Override
+      public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        return false; // Return false if nothing is done
+      }
+
+      // Called when the user selects a contextual menu item
+      @Override
+      public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+          if (item.getItemId() ==  R.id.action_highlight) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+              evaluateJavascript("(function(){return document.queryCommandValue('backcolor')})()", new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String value) {
+                  if (value.equals("\"rgba(0, 0, 0, 0)\"")) { // Not highlighted => Add highlight
+                    evaluateJavascript("javascript:highlightSelectedText()", new ValueCallback<String>() {
+                      @Override
+                      public void onReceiveValue(String value) {
+                        String result = removeUTFCharacters(value).toString();
+                        onHtmlChanged(result);
+                        mode.finish();
+                      }
+                    });
+                  } else { // Highlighted => Remove highlight
+                    evaluateJavascript("javascript:removeHighlightFromSelectedText()", new ValueCallback<String>() {
+                      @Override
+                      public void onReceiveValue(String value) {
+                        String result = removeUTFCharacters(value).toString();
+                        onHtmlChanged(result);
+                        mode.finish();
+                      }
+                    });
+                  }
+                }
+              });
+            }
+            else{
+              mode.finish();
+            }
+            return true;
+          }
+          else {
+            mode.finish();
+            return false;
+          }
+      }
+
+
+      // Called when the user exits the action mode
+      @Override
+      public void onDestroyActionMode(ActionMode mode) {
+        clearFocus(); // This is the new code to remove the text highlight
+      }
+    }
+
     public void setSendContentSizeChangeEvents(boolean sendContentSizeChangeEvents) {
       this.sendContentSizeChangeEvents = sendContentSizeChangeEvents;
     }
@@ -325,6 +464,15 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
       }
     }
 
+    @SuppressLint("AddJavascriptInterface")
+    public void setHighlightEnabled(boolean enabled) {
+      if (highlightEnabled == enabled) {
+        return;
+      }
+
+      highlightEnabled = enabled;
+    }
+
     protected void evaluateJavascriptWithFallback(String script) {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
         evaluateJavascript(script, null);
@@ -349,6 +497,10 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
 
     public void onMessage(String message) {
       dispatchEvent(this, new TopMessageEvent(this.getId(), message));
+    }
+
+    public void onHtmlChanged(String newHtml) {
+      dispatchEvent(this, new TopHtmlChangedEvent(this.getId(), newHtml));
     }
 
     protected void cleanupCallbacksAndDestroy() {
@@ -594,6 +746,11 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     ((RNCWebView) view).setMessagingEnabled(enabled);
   }
 
+  @ReactProp(name = "highlightEnabled")
+  public void setHighlightEnabled(WebView view, boolean enabled) {
+    ((RNCWebView) view).setHighlightEnabled(enabled);
+  }
+
   @ReactProp(name = "source")
   public void setSource(WebView view, @Nullable ReadableMap source) {
     if (source != null) {
@@ -603,7 +760,12 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
           view.loadDataWithBaseURL(
               source.getString("baseUrl"), html, HTML_MIME_TYPE, HTML_ENCODING, null);
         } else {
-          view.loadData(html, HTML_MIME_TYPE + "; charset=" + HTML_ENCODING, null);
+//          if (((RNCWebView) view).highlightEnabled) {
+            String modifiedHtmlString = "<html><head><style type=\"text/css\">.highlight { background-color: yellow }</style></head><body>" + html + "</body></html>";
+            view.loadData(modifiedHtmlString, HTML_MIME_TYPE + "; charset=" + HTML_ENCODING, null);
+//          } else {
+//            view.loadData(html, HTML_MIME_TYPE + "; charset=" + HTML_ENCODING, null);
+//          }
         }
         return;
       }
@@ -710,6 +872,8 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     }
     export.put(TopLoadingProgressEvent.EVENT_NAME, MapBuilder.of("registrationName", "onLoadingProgress"));
     export.put(TopShouldStartLoadWithRequestEvent.EVENT_NAME, MapBuilder.of("registrationName", "onShouldStartLoadWithRequest"));
+    export.put(TopHtmlChangedEvent.EVENT_NAME, MapBuilder.of("registrationName", "onHtmlChanged"));
+
     return export;
   }
 

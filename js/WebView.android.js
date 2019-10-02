@@ -31,6 +31,7 @@ import type {
   WebViewError,
   WebViewErrorEvent,
   WebViewMessageEvent,
+  WebViewHtmlChangedEvent,
   WebViewNavigationEvent,
   WebViewProgressEvent,
   WebViewSharedProps,
@@ -159,7 +160,9 @@ class WebView extends React.Component<WebViewSharedProps, State> {
         domStorageEnabled={this.props.domStorageEnabled}
         cacheEnabled={this.props.cacheEnabled}
         onMessage={this.onMessage}
+        onHtmlChanged={this.onHtmlChanged}
         messagingEnabled={typeof this.props.onMessage === 'function'}
+        highlightEnabled={typeof this.props.onHtmlChanged === 'function'}
         overScrollMode={this.props.overScrollMode}
         contentInset={this.props.contentInset}
         automaticallyAdjustContentInsets={
@@ -297,6 +300,11 @@ class WebView extends React.Component<WebViewSharedProps, State> {
   onMessage = (event: WebViewMessageEvent) => {
     const { onMessage } = this.props;
     onMessage && onMessage(event);
+  };
+
+  onHtmlChanged = (event: WebViewHtmlChangedEvent) => {
+    const { onHtmlChanged } = this.props;
+    onHtmlChanged && onHtmlChanged(event);
   };
 
   onLoadingProgress = (event: WebViewProgressEvent) => {

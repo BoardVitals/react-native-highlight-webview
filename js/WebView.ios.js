@@ -267,6 +267,8 @@ class WebView extends React.Component<WebViewSharedProps, State> {
         onLoadingError={this._onLoadingError}
         onLoadingProgress={this._onLoadingProgress}
         onMessage={this._onMessage}
+        onHtmlChanged={this._onHtmlChanged}
+        highlightEnabled={typeof this.props.onHtmlChanged === 'function'}
         messagingEnabled={typeof this.props.onMessage === 'function'}
         onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
         scalesPageToFit={scalesPageToFit}
@@ -423,6 +425,11 @@ class WebView extends React.Component<WebViewSharedProps, State> {
   _onMessage = (event: WebViewMessageEvent) => {
     const { onMessage } = this.props;
     onMessage && onMessage(event);
+  };
+
+  _onHtmlChanged = (event: WebViewMessageEvent) => {
+    const { onHtmlChanged } = this.props;
+    onHtmlChanged && onHtmlChanged(event);
   };
 
   _onLoadingProgress = (event: WebViewProgressEvent) => {

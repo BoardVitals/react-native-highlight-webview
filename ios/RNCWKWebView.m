@@ -10,6 +10,8 @@
 #import <React/RCTAutoInsetsProtocol.h>
 #import "RNCWKProcessPoolManager.h"
 #import <UIKit/UIKit.h>
+#import "RNCHighlightWebView.h"
+
 
 #import "objc/runtime.h"
 
@@ -25,14 +27,16 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
 }
 @end
 
-@interface RNCWKWebView () <WKUIDelegate, WKNavigationDelegate, WKScriptMessageHandler, UIScrollViewDelegate, RCTAutoInsetsProtocol>
+@interface RNCWKWebView () <WKUIDelegate, WKNavigationDelegate, WKScriptMessageHandler, UIScrollViewDelegate, RCTAutoInsetsProtocol, RNCHighlightWebViewDelegate>
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingStart;
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingFinish;
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingError;
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingProgress;
 @property (nonatomic, copy) RCTDirectEventBlock onShouldStartLoadWithRequest;
 @property (nonatomic, copy) RCTDirectEventBlock onMessage;
-@property (nonatomic, copy) WKWebView *webView;
+@property (nonatomic, copy) RCTDirectEventBlock onHtmlChanged;
+@property (nonatomic, copy) RNCHighlightWebView *webView;
+
 @end
 
 @implementation RNCWKWebView
@@ -127,7 +131,9 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
     wkWebViewConfig.mediaPlaybackRequiresUserAction = _mediaPlaybackRequiresUserAction;
 #endif
 
-    _webView = [[WKWebView alloc] initWithFrame:self.bounds configuration: wkWebViewConfig];
+    _webView = [[RNCHighlightWebView alloc] initWithFrame:self.bounds configuration: wkWebViewConfig highlightEnabled:_highlightEnabled];
+    _webView.delegate = self;
+    _webView.highlightEnabled = _highlightEnabled;
     _webView.scrollView.delegate = self;
     _webView.UIDelegate = self;
     _webView.navigationDelegate = self;
@@ -246,7 +252,13 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
     if (!baseURL) {
       baseURL = [NSURL URLWithString:@"about:blank"];
     }
-    [_webView loadHTMLString:html baseURL:baseURL];
+    if (_highlightEnabled){
+        NSString* modifiedHtmlString = [NSString stringWithFormat:@"<html><head><style type=\"text/css\">.highlight { background-color: yellow }</style></head><body>%@</body></html>", html];
+        [_webView loadHTMLString:modifiedHtmlString baseURL:baseURL];
+    } else {
+        [_webView loadHTMLString:html baseURL:baseURL];
+    }
+    
     return;
   }
 
@@ -556,6 +568,13 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
   }
 
   [self setBackgroundColor: _savedBackgroundColor];
+  if (_highlightEnabled){
+      //Loading Rangy Javascript files after the page has loaded
+      NSString *rangyCorePath = [[NSBundle mainBundle] pathForResource:@"rangy" ofType:@"js"];
+      NSString *rangyCoreContent = [NSString stringWithContentsOfFile:rangyCorePath encoding:NSUTF8StringEncoding error:nil];
+      [webView evaluateJavaScript:rangyCoreContent completionHandler:nil];
+  }
+
 }
 
 - (void)injectJavaScript:(NSString *)script
@@ -599,4 +618,12 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
   _bounces = bounces;
   _webView.scrollView.bounces = bounces;
 }
+- (void)htmlContentChanged:(nonnull NSString *)newHTML {
+    NSMutableDictionary *event = [self baseEvent];
+    event[@"data"] = newHTML;
+    if (self.onHtmlChanged != nil) {
+        self.onHtmlChanged(event);
+    }
+}
+
 @end

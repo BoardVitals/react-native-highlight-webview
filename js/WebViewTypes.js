@@ -47,6 +47,11 @@ export type WebViewMessage = $ReadOnly<{|
   data: string,
 |}>;
 
+export type WebViewHtmlChanged = $ReadOnly<{|
+  ...WebViewNativeEvent,
+  data: string,
+|}>;
+
 export type WebViewError = $ReadOnly<{|
   ...WebViewNativeEvent,
   /**
@@ -62,6 +67,8 @@ export type WebViewEvent = SyntheticEvent<WebViewNativeEvent>;
 export type WebViewNavigationEvent = SyntheticEvent<WebViewNavigation>;
 
 export type WebViewMessageEvent = SyntheticEvent<WebViewMessage>;
+
+export type WebViewHtmlChangedEvent = SyntheticEvent<WebViewHtmlChanged>;
 
 export type WebViewErrorEvent = SyntheticEvent<WebViewError>;
 
@@ -431,6 +438,8 @@ export type WebViewSharedProps = $ReadOnly<{|
    * available on the event object, `event.nativeEvent.data`. `data` must be a string.
    */
   onMessage?: (event: WebViewMessageEvent) => mixed,
+
+  onHtmlChanged?: (event: WebViewHtmlChangedEvent) => mixed,
 
   /**
    * Function that is invoked when the `WebView` is loading.
