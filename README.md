@@ -19,7 +19,7 @@ If you need the exact same WebView as the one from react-native, please use vers
 ## Getting Started
 
 ```
-$ yarn add react-native-webview
+$ npm install --save BoardVitals/react-native-highlight-webview#boardvitals_highlight_pre_upgrade
 $ react-native link react-native-webview
 ```
 
