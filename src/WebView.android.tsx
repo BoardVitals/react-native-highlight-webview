@@ -46,7 +46,6 @@ const { resolveAssetSource } = Image;
 class WebView extends React.Component<AndroidWebViewProps, State> {
   static defaultProps = {
     overScrollMode: 'always',
-    javaScriptEnabled: true,
     thirdPartyCookiesEnabled: true,
     scalesPageToFit: true,
     allowsFullscreenVideo: false,
@@ -313,6 +312,7 @@ class WebView extends React.Component<AndroidWebViewProps, State> {
         key="webViewKey"
         {...otherProps}
         messagingEnabled={typeof onMessage === 'function'}
+        highlightEnabled={typeof onHtmlChanged === 'function'}
         onLoadingError={this.onLoadingError}
         onLoadingFinish={this.onLoadingFinish}
         onLoadingProgress={this.onLoadingProgress}
@@ -320,7 +320,6 @@ class WebView extends React.Component<AndroidWebViewProps, State> {
         onHttpError={this.onHttpError}
         onMessage={this.onMessage}
         onHtmlChanged={this.onHtmlChanged}
-        highlightEnabled={typeof onHtmlChanged === 'function'}
         onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
         ref={this.webViewRef}
         // TODO: find a better way to type this.
