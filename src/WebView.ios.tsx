@@ -345,6 +345,7 @@ class WebView extends React.Component<IOSWebViewProps, State> {
         {...otherProps}
         decelerationRate={decelerationRate}
         messagingEnabled={typeof onMessage === 'function'}
+        highlightEnabled={typeof onHtmlChanged === 'function'}
         onLoadingError={this.onLoadingError}
         onLoadingFinish={this.onLoadingFinish}
         onLoadingProgress={this.onLoadingProgress}
@@ -352,7 +353,6 @@ class WebView extends React.Component<IOSWebViewProps, State> {
         onHttpError={this.onHttpError}
         onMessage={this.onMessage}
         onHtmlChanged={this.onHtmlChanged}
-        highlightEnabled={typeof onHtmlChanged === 'function'}
         onScroll={this.props.onScroll}
         onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
         onContentProcessDidTerminate={this.onContentProcessDidTerminate}
