@@ -675,6 +675,8 @@ export interface WebViewSharedProps extends ViewProps {
    */
   onMessage?: (event: WebViewMessageEvent) => void;
 
+  onHtmlChanged?: (event: WebViewHtmlChangedEvent) => void;
+
   /**
    * Function that is invoked when the `WebView` is loading.
    */
