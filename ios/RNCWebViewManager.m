@@ -80,6 +80,14 @@ RCT_EXPORT_VIEW_PROPERTY(messagingEnabled, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(onMessage, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onScroll, RCTDirectEventBlock)
 
+/**BV**/
+/**
+ * Expose methods to enable highlight when selecting text
+ */
+RCT_EXPORT_VIEW_PROPERTY(highlightEnabled, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(onHtmlChanged, RCTDirectEventBlock)
+
+
 RCT_EXPORT_METHOD(postMessage:(nonnull NSNumber *)reactTag message:(NSString *)message)
 {
   [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, RNCWebView *> *viewRegistry) {

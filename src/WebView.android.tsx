@@ -28,6 +28,7 @@ import {
   NativeWebViewAndroid,
   State,
   RNCWebViewUIManager,
+  WebViewHtmlChangedEvent,
 } from './WebViewTypes';
 
 import styles from './WebView.styles';
@@ -214,6 +215,14 @@ class WebView extends React.Component<AndroidWebViewProps, State> {
     }
   };
 
+  onHtmlChanged = (event: WebViewHtmlChangedEvent) => {
+    const { onHtmlChanged } = this.props;
+    if (onHtmlChanged) {
+      onHtmlChanged(event);
+    }
+  };
+
+
   onLoadingProgress = (event: WebViewProgressEvent) => {
     const { onLoadProgress } = this.props;
     const { nativeEvent: { progress } } = event;
@@ -246,6 +255,7 @@ class WebView extends React.Component<AndroidWebViewProps, State> {
   render() {
     const {
       onMessage,
+      onHtmlChanged,
       onShouldStartLoadWithRequest: onShouldStartLoadWithRequestProp,
       originWhitelist,
       renderError,
@@ -309,6 +319,8 @@ class WebView extends React.Component<AndroidWebViewProps, State> {
         onLoadingStart={this.onLoadingStart}
         onHttpError={this.onHttpError}
         onMessage={this.onMessage}
+        onHtmlChanged={this.onHtmlChanged}
+        highlightEnabled={typeof onHtmlChanged === 'function'}
         onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
         ref={this.webViewRef}
         // TODO: find a better way to type this.

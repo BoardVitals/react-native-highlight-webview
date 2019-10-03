@@ -1,4 +1,16 @@
 package com.reactnativecommunity.webview;
+/**BV**/
+import java.io.InputStream;
+import java.util.regex.Matcher;
+import android.view.ActionMode;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.ViewParent;
+import com.reactnativecommunity.webview.events.TopHtmlChangedEvent;
+import static android.view.ActionMode.TYPE_FLOATING;
+import static android.view.ActionMode.TYPE_PRIMARY;
+
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -391,6 +403,12 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     ((RNCWebView) view).setInjectedJavaScript(injectedJavaScript);
   }
 
+  /**BV**/
+  @ReactProp(name = "highlightEnabled")
+  public void setHighlightEnabled(WebView view, boolean enabled) {
+    ((RNCWebView) view).setHighlightEnabled(enabled);
+  }
+
   @ReactProp(name = "messagingEnabled")
   public void setMessagingEnabled(WebView view, boolean enabled) {
     ((RNCWebView) view).setMessagingEnabled(enabled);
@@ -422,8 +440,18 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     if (source != null) {
       if (source.hasKey("html")) {
         String html = source.getString("html");
-        String baseUrl = source.hasKey("baseUrl") ? source.getString("baseUrl") : "";
-        view.loadDataWithBaseURL(baseUrl, html, HTML_MIME_TYPE, HTML_ENCODING, null);
+        /**BV**/
+        if (source.hasKey("baseUrl")) {
+          view.loadDataWithBaseURL(
+              source.getString("baseUrl"), html, HTML_MIME_TYPE, HTML_ENCODING, null);
+        } else {
+//          if (((RNCWebView) view).highlightEnabled) {
+            String modifiedHtmlString = "<html><head><style type=\"text/css\">.highlight { background-color: yellow }</style></head><body>" + html + "</body></html>";
+            view.loadData(modifiedHtmlString, HTML_MIME_TYPE + "; charset=" + HTML_ENCODING, null);
+//          } else {
+//            view.loadData(html, HTML_MIME_TYPE + "; charset=" + HTML_ENCODING, null);
+//          }
+        }
         return;
       }
       if (source.hasKey("uri")) {
@@ -702,6 +730,22 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
         reactWebView.callInjectedJavaScript();
 
         emitFinishEvent(webView, url);
+        /**BV**/
+        if (reactWebView.highlightEnabled) {
+          //Inject Rangy Javascript files
+          try {
+            final InputStream in = webView.getContext().getAssets().open("rangy.js");
+            int size = in.available();
+            byte[] buffer = new byte[size]; //declare the size of the byte array with size of the file
+            in.read(buffer); //read file
+            in.close(); //close file
+            String rangyScript = new String(buffer);
+            reactWebView.evaluateJavascriptWithFallback(rangyScript);
+
+          } catch (final Throwable tx) {
+
+          }
+        }
       }
     }
 
@@ -948,11 +992,123 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     protected @Nullable
     String injectedJS;
     protected boolean messagingEnabled = false;
+    /**BV**/
+    protected boolean highlightEnabled = false;
     protected @Nullable
     RNCWebViewClient mRNCWebViewClient;
     protected boolean sendContentSizeChangeEvents = false;
     private OnScrollDispatchHelper mOnScrollDispatchHelper;
     protected boolean hasScrollEvent = false;
+
+
+    /**BV**/
+    public static StringBuffer removeUTFCharacters(String data) {
+      Pattern p = Pattern.compile("\\\\u(\\p{XDigit}{4})");
+      Matcher m = p.matcher(data);
+      StringBuffer buf = new StringBuffer(data.length());
+      while (m.find()) {
+        String ch = String.valueOf((char) Integer.parseInt(m.group(1), 16));
+        m.appendReplacement(buf, Matcher.quoteReplacement(ch));
+      }
+      m.appendTail(buf);
+      return buf;
+    }
+
+    @Override
+    public ActionMode startActionModeForChild(View originalView, ActionMode.Callback callback) {
+      if (highlightEnabled) {
+        mActionModeCallback = new CustomActionModeCallback();
+        return super.startActionModeForChild(originalView, mActionModeCallback);
+      }
+      return super.startActionModeForChild(originalView, callback);
+    }
+
+    @Override
+    public ActionMode startActionMode(ActionMode.Callback callback) {
+      if (highlightEnabled) {
+        mActionModeCallback = new CustomActionModeCallback();
+        return super.startActionMode(mActionModeCallback);
+      }
+      return super.startActionMode(callback);
+    }
+
+    @Override
+    public ActionMode startActionMode(ActionMode.Callback callback, int type) {
+      if (highlightEnabled) {
+        mActionModeCallback = new CustomActionModeCallback();
+        return super.startActionMode(mActionModeCallback, 0);
+      }
+      return super.startActionMode(callback, type);
+    }
+
+
+    private class CustomActionModeCallback implements ActionMode.Callback {
+
+      // Called when the action mode is created; startActionMode() was called
+      @Override
+      public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        // Inflate a menu resource providing context menu items
+        MenuInflater inflater = mode.getMenuInflater();
+        inflater.inflate(R.menu.custom_menu, menu);
+        return true;
+      }
+
+      // Called each time the action mode is shown.
+      // Always called after onCreateActionMode, but
+      // may be called multiple times if the mode is invalidated.
+      @Override
+      public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        return false; // Return false if nothing is done
+      }
+
+      // Called when the user selects a contextual menu item
+      @Override
+      public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+          if (item.getItemId() ==  R.id.action_highlight) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+              evaluateJavascript("(function(){return document.queryCommandValue('backcolor')})()", new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String value) {
+                  if (value.equals("\"rgba(0, 0, 0, 0)\"")) { // Not highlighted => Add highlight
+                    evaluateJavascript("javascript:highlightSelectedText()", new ValueCallback<String>() {
+                      @Override
+                      public void onReceiveValue(String value) {
+                        String result = removeUTFCharacters(value).toString();
+                        onHtmlChanged(result);
+                        mode.finish();
+                      }
+                    });
+                  } else { // Highlighted => Remove highlight
+                    evaluateJavascript("javascript:removeHighlightFromSelectedText()", new ValueCallback<String>() {
+                      @Override
+                      public void onReceiveValue(String value) {
+                        String result = removeUTFCharacters(value).toString();
+                        onHtmlChanged(result);
+                        mode.finish();
+                      }
+                    });
+                  }
+                }
+              });
+            }
+            else{
+              mode.finish();
+            }
+            return true;
+          }
+          else {
+            mode.finish();
+            return false;
+          }
+      }
+
+
+      // Called when the user exits the action mode
+      @Override
+      public void onDestroyActionMode(ActionMode mode) {
+        clearFocus(); // This is the new code to remove the text highlight
+      }
+    }
 
     /**
      * WebView must be created with an context of the current activity
@@ -1022,6 +1178,16 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
       return new RNCWebViewBridge(webView);
     }
 
+    /**BV**/
+    @SuppressLint("AddJavascriptInterface")
+    public void setHighlightEnabled(boolean enabled) {
+      if (highlightEnabled == enabled) {
+        return;
+      }
+
+      highlightEnabled = enabled;
+    }
+
     @SuppressLint("AddJavascriptInterface")
     public void setMessagingEnabled(boolean enabled) {
       if (messagingEnabled == enabled) {
@@ -1057,6 +1223,10 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
         !TextUtils.isEmpty(injectedJS)) {
         evaluateJavascriptWithFallback("(function() {\n" + injectedJS + ";\n})();");
       }
+    }
+    /**BV**/
+    public void onHtmlChanged(String newHtml) {
+      dispatchEvent(this, new TopHtmlChangedEvent(this.getId(), newHtml));
     }
 
     public void onMessage(String message) {

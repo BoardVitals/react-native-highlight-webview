@@ -29,6 +29,7 @@ import {
   ViewManager,
   State,
   RNCWebViewUIManager,
+  WebViewHtmlChangedEvent,
 } from './WebViewTypes';
 
 import styles from './WebView.styles';
@@ -230,6 +231,14 @@ class WebView extends React.Component<IOSWebViewProps, State> {
     this.updateNavigationState(event);
   };
 
+  onHtmlChanged = (event: WebViewHtmlChangedEvent) => {
+    const { onHtmlChanged } = this.props;
+    if (onHtmlChanged) {
+      onHtmlChanged(event);
+    }
+  };
+
+
   onMessage = (event: WebViewMessageEvent) => {
     const { onMessage } = this.props;
     if (onMessage) {
@@ -286,6 +295,7 @@ class WebView extends React.Component<IOSWebViewProps, State> {
       decelerationRate: decelerationRateProp,
       nativeConfig = {},
       onMessage,
+      onHtmlChanged,
       onShouldStartLoadWithRequest: onShouldStartLoadWithRequestProp,
       originWhitelist,
       renderError,
@@ -341,6 +351,8 @@ class WebView extends React.Component<IOSWebViewProps, State> {
         onLoadingStart={this.onLoadingStart}
         onHttpError={this.onHttpError}
         onMessage={this.onMessage}
+        onHtmlChanged={this.onHtmlChanged}
+        highlightEnabled={typeof onHtmlChanged === 'function'}
         onScroll={this.props.onScroll}
         onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
         onContentProcessDidTerminate={this.onContentProcessDidTerminate}

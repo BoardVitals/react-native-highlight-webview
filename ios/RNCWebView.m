@@ -10,6 +10,8 @@
 #import <React/RCTAutoInsetsProtocol.h>
 #import "RNCWKProcessPoolManager.h"
 #import <UIKit/UIKit.h>
+/**BV**/
+#import "RNCHighlightWebView.h"
 
 #import "objc/runtime.h"
 
@@ -21,7 +23,7 @@ static NSDictionary* customCertificatesForHost;
 // runtime trick to remove WKWebView keyboard default toolbar
 // see: http://stackoverflow.com/questions/19033292/ios-7-uiwebview-keyboard-issue/19042279#19042279
 @interface _SwizzleHelperWK : UIView
-@property (nonatomic, copy) WKWebView *webView;
+@property (nonatomic, copy) RNCHighlightWebView *webView;
 @end
 @implementation _SwizzleHelperWK
 -(id)inputAccessoryView
@@ -39,7 +41,8 @@ static NSDictionary* customCertificatesForHost;
 }
 @end
 
-@interface RNCWebView () <WKUIDelegate, WKNavigationDelegate, WKScriptMessageHandler, UIScrollViewDelegate, RCTAutoInsetsProtocol>
+/**BV**/
+@interface RNCWebView () <WKUIDelegate, WKNavigationDelegate, WKScriptMessageHandler, UIScrollViewDelegate, RCTAutoInsetsProtocol, RNCHighlightWebViewDelegate>
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingStart;
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingFinish;
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingError;
@@ -49,7 +52,10 @@ static NSDictionary* customCertificatesForHost;
 @property (nonatomic, copy) RCTDirectEventBlock onMessage;
 @property (nonatomic, copy) RCTDirectEventBlock onScroll;
 @property (nonatomic, copy) RCTDirectEventBlock onContentProcessDidTerminate;
-@property (nonatomic, copy) WKWebView *webView;
+/**BV**/
+@property (nonatomic, copy) RCTDirectEventBlock onHtmlChanged;
+@property (nonatomic, copy) RNCHighlightWebView *webView;
+
 @end
 
 @implementation RNCWebView
@@ -242,8 +248,10 @@ static NSDictionary* customCertificatesForHost;
         [wkWebViewConfig.userContentController addUserScript:cookieInScript];
       }
     }
-
-    _webView = [[WKWebView alloc] initWithFrame:self.bounds configuration: wkWebViewConfig];
+    /**BV**/
+    _webView = [[RNCHighlightWebView alloc] initWithFrame:self.bounds configuration: wkWebViewConfig highlightEnabled:_highlightEnabled];
+    _webView.delegate = self;
+    _webView.highlightEnabled = _highlightEnabled;
     [self setBackgroundColor: _savedBackgroundColor];
     _webView.scrollView.delegate = self;
     _webView.UIDelegate = self;
@@ -443,7 +451,14 @@ static NSDictionary* customCertificatesForHost;
         if (!baseURL) {
             baseURL = [NSURL URLWithString:@"about:blank"];
         }
-        [_webView loadHTMLString:html baseURL:baseURL];
+        /**BV**/
+        if (_highlightEnabled){
+          NSString* modifiedHtmlString = [NSString stringWithFormat:@"<html><head><style type=\"text/css\">.highlight { background-color: yellow }</style></head><body>%@</body></html>", html];
+          [_webView loadHTMLString:modifiedHtmlString baseURL:baseURL];
+        } else {
+          [_webView loadHTMLString:html baseURL:baseURL];
+        }
+
         return;
     }
 
@@ -964,6 +979,13 @@ static NSDictionary* customCertificatesForHost;
   } else if (_onLoadingFinish) {
     _onLoadingFinish([self baseEvent]);
   }
+  /**BV**/
+  if (_highlightEnabled){
+      //Loading Rangy Javascript files after the page has loaded
+      NSString *rangyCorePath = [[NSBundle mainBundle] pathForResource:@"rangy" ofType:@"js"];
+      NSString *rangyCoreContent = [NSString stringWithContentsOfFile:rangyCorePath encoding:NSUTF8StringEncoding error:nil];
+      [webView evaluateJavaScript:rangyCoreContent completionHandler:nil];
+  }
 }
 
 - (void)injectJavaScript:(NSString *)script
@@ -1027,5 +1049,14 @@ static NSDictionary* customCertificatesForHost;
   }
   return request;
 }
+
+- (void)htmlContentChanged:(nonnull NSString *)newHTML {
+    NSMutableDictionary *event = [self baseEvent];
+    event[@"data"] = newHTML;
+    if (self.onHtmlChanged != nil) {
+        self.onHtmlChanged(event);
+    }
+}
+
 
 @end
