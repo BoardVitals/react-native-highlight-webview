@@ -611,6 +611,8 @@ export interface WebViewSharedProps extends ViewProps {
    */
   javaScriptEnabled?: boolean;
 
+  highlightEnabled?: boolean;
+
   /**
    * Stylesheet object to set the style of the container view.
    */
