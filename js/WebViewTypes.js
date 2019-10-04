@@ -50,6 +50,7 @@ export type WebViewMessage = $ReadOnly<{|
 export type WebViewHtmlChanged = $ReadOnly<{|
   ...WebViewNativeEvent,
   data: string,
+  ranges: string,
 |}>;
 
 export type WebViewError = $ReadOnly<{|

@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol RNCHighlightWebViewDelegate
 
--(void)htmlContentChanged:(NSString*)newHTML;
+-(void)htmlContentChanged:(NSString*)newHTML ranges:(NSString*)ranges;
 
 @end
 

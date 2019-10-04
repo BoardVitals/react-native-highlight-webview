@@ -7,7 +7,7 @@ import com.facebook.react.uimanager.events.RCTEventEmitter
 /**
  * Event emitted when there is an error in loading.
  */
-class TopHtmlChangedEvent(viewId: Int, private val mData: String) : Event<TopHtmlChangedEvent>(viewId) {
+class TopHtmlChangedEvent(viewId: Int, private val mData: String, private val mRanges: String) : Event<TopHtmlChangedEvent>(viewId) {
         companion object {
                 const val EVENT_NAME = "topHtmlChanged"
         }
@@ -21,6 +21,7 @@ class TopHtmlChangedEvent(viewId: Int, private val mData: String) : Event<TopHtm
         override fun dispatch(rctEventEmitter: RCTEventEmitter) {
                 val data = Arguments.createMap()
                 data.putString("data", mData)
+                data.putString("ranges", mRanges)
                 rctEventEmitter.receiveEvent(viewTag, EVENT_NAME, data)
         }
 }

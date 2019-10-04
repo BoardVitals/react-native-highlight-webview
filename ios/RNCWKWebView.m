@@ -23,7 +23,7 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
 @implementation _SwizzleHelperWK
 -(id)inputAccessoryView
 {
-  return nil;
+    return nil;
 }
 @end
 
@@ -41,8 +41,8 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
 
 @implementation RNCWKWebView
 {
-  UIColor * _savedBackgroundColor;
-  BOOL _savedHideKeyboardAccessoryView;
+    UIColor * _savedBackgroundColor;
+    BOOL _savedHideKeyboardAccessoryView;
 }
 
 - (void)dealloc{}
@@ -52,29 +52,29 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
  */
 + (BOOL)dynamicallyLoadWebKitIfAvailable
 {
-  static BOOL _webkitAvailable=NO;
-  static dispatch_once_t onceToken;
-
-  dispatch_once(&onceToken, ^{
-    NSBundle *webKitBundle = [NSBundle bundleWithPath:@"/System/Library/Frameworks/WebKit.framework"];
-    if (webKitBundle) {
-      _webkitAvailable = [webKitBundle load];
-    }
-  });
-
-  return _webkitAvailable;
+    static BOOL _webkitAvailable=NO;
+    static dispatch_once_t onceToken;
+    
+    dispatch_once(&onceToken, ^{
+        NSBundle *webKitBundle = [NSBundle bundleWithPath:@"/System/Library/Frameworks/WebKit.framework"];
+        if (webKitBundle) {
+            _webkitAvailable = [webKitBundle load];
+        }
+    });
+    
+    return _webkitAvailable;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
-  if ((self = [super initWithFrame:frame])) {
-    super.backgroundColor = [UIColor clearColor];
-    _bounces = YES;
-    _scrollEnabled = YES;
-    _automaticallyAdjustContentInsets = YES;
-    _contentInset = UIEdgeInsetsZero;
-  }
-  return self;
+    if ((self = [super initWithFrame:frame])) {
+        super.backgroundColor = [UIColor clearColor];
+        _bounces = YES;
+        _scrollEnabled = YES;
+        _automaticallyAdjustContentInsets = YES;
+        _contentInset = UIEdgeInsetsZero;
+    }
+    return self;
 }
 
 /**
@@ -82,87 +82,86 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
  */
 - (WKWebView *)webView:(WKWebView *)webView createWebViewWithConfiguration:(WKWebViewConfiguration *)configuration forNavigationAction:(WKNavigationAction *)navigationAction windowFeatures:(WKWindowFeatures *)windowFeatures
 {
-  if (!navigationAction.targetFrame.isMainFrame) {
-    [webView loadRequest:navigationAction.request];
-  }
-  return nil;
+    if (!navigationAction.targetFrame.isMainFrame) {
+        [webView loadRequest:navigationAction.request];
+    }
+    return nil;
 }
 
 - (void)didMoveToWindow
 {
-  if (self.window != nil && _webView == nil) {
-    if (![[self class] dynamicallyLoadWebKitIfAvailable]) {
-      return;
-    };
-
-    WKWebViewConfiguration *wkWebViewConfig = [WKWebViewConfiguration new];
-    if (_incognito) {
-      wkWebViewConfig.websiteDataStore = [WKWebsiteDataStore nonPersistentDataStore];
-    } else if (_cacheEnabled) {
-      wkWebViewConfig.websiteDataStore = [WKWebsiteDataStore defaultDataStore];
-    }
-    if(self.useSharedProcessPool) {
-      wkWebViewConfig.processPool = [[RNCWKProcessPoolManager sharedManager] sharedProcessPool];
-    }
-    wkWebViewConfig.userContentController = [WKUserContentController new];
-
-    if (_messagingEnabled) {
-      [wkWebViewConfig.userContentController addScriptMessageHandler:self name:MessageHandlerName];
-
-      NSString *source = [NSString stringWithFormat:
-        @"window.%@ = {"
-         "  postMessage: function (data) {"
-         "    window.webkit.messageHandlers.%@.postMessage(String(data));"
-         "  }"
-         "};", MessageHandlerName, MessageHandlerName
-      ];
-
-      WKUserScript *script = [[WKUserScript alloc] initWithSource:source injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
-      [wkWebViewConfig.userContentController addUserScript:script];
-    }
-
-    wkWebViewConfig.allowsInlineMediaPlayback = _allowsInlineMediaPlayback;
+    if (self.window != nil && _webView == nil) {
+        if (![[self class] dynamicallyLoadWebKitIfAvailable]) {
+            return;
+        };
+        
+        WKWebViewConfiguration *wkWebViewConfig = [WKWebViewConfiguration new];
+        if (_incognito) {
+            wkWebViewConfig.websiteDataStore = [WKWebsiteDataStore nonPersistentDataStore];
+        } else if (_cacheEnabled) {
+            wkWebViewConfig.websiteDataStore = [WKWebsiteDataStore defaultDataStore];
+        }
+        if(self.useSharedProcessPool) {
+            wkWebViewConfig.processPool = [[RNCWKProcessPoolManager sharedManager] sharedProcessPool];
+        }
+        wkWebViewConfig.userContentController = [WKUserContentController new];
+        
+        if (_messagingEnabled) {
+            [wkWebViewConfig.userContentController addScriptMessageHandler:self name:MessageHandlerName];
+            NSString *source = [NSString stringWithFormat:
+                                @"window.%@ = {"
+                                "  postMessage: function (data) {"
+                                "    window.webkit.messageHandlers.%@.postMessage(String(data));"
+                                "  }"
+                                "};", MessageHandlerName, MessageHandlerName
+                                ];
+            
+            WKUserScript *script = [[WKUserScript alloc] initWithSource:source injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES];
+            [wkWebViewConfig.userContentController addUserScript:script];
+        }
+        
+        wkWebViewConfig.allowsInlineMediaPlayback = _allowsInlineMediaPlayback;
 #if WEBKIT_IOS_10_APIS_AVAILABLE
-    wkWebViewConfig.mediaTypesRequiringUserActionForPlayback = _mediaPlaybackRequiresUserAction
-      ? WKAudiovisualMediaTypeAll
-      : WKAudiovisualMediaTypeNone;
-    wkWebViewConfig.dataDetectorTypes = _dataDetectorTypes;
+        wkWebViewConfig.mediaTypesRequiringUserActionForPlayback = _mediaPlaybackRequiresUserAction
+        ? WKAudiovisualMediaTypeAll
+        : WKAudiovisualMediaTypeNone;
+        wkWebViewConfig.dataDetectorTypes = _dataDetectorTypes;
 #else
-    wkWebViewConfig.mediaPlaybackRequiresUserAction = _mediaPlaybackRequiresUserAction;
+        wkWebViewConfig.mediaPlaybackRequiresUserAction = _mediaPlaybackRequiresUserAction;
 #endif
-
-    _webView = [[RNCHighlightWebView alloc] initWithFrame:self.bounds configuration: wkWebViewConfig highlightEnabled:_highlightEnabled];
-    _webView.delegate = self;
-    _webView.highlightEnabled = _highlightEnabled;
-    _webView.scrollView.delegate = self;
-    _webView.UIDelegate = self;
-    _webView.navigationDelegate = self;
-    _webView.scrollView.scrollEnabled = _scrollEnabled;
-    _webView.scrollView.pagingEnabled = _pagingEnabled;
-    _webView.scrollView.bounces = _bounces;
-    _webView.allowsLinkPreview = _allowsLinkPreview;
-    [_webView addObserver:self forKeyPath:@"estimatedProgress" options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew context:nil];
-    _webView.allowsBackForwardNavigationGestures = _allowsBackForwardNavigationGestures;
-
-    if (_userAgent) {
-      _webView.customUserAgent = _userAgent;
-    }
+        
+        _webView = [[RNCHighlightWebView alloc] initWithFrame:self.bounds configuration: wkWebViewConfig highlightEnabled:_highlightEnabled];
+        _webView.delegate = self;
+        _webView.highlightEnabled = _highlightEnabled;
+        _webView.scrollView.delegate = self;
+        _webView.UIDelegate = self;
+        _webView.navigationDelegate = self;
+        _webView.scrollView.scrollEnabled = _scrollEnabled;
+        _webView.scrollView.pagingEnabled = _pagingEnabled;
+        _webView.scrollView.bounces = _bounces;
+        _webView.allowsLinkPreview = _allowsLinkPreview;
+        [_webView addObserver:self forKeyPath:@"estimatedProgress" options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew context:nil];
+        _webView.allowsBackForwardNavigationGestures = _allowsBackForwardNavigationGestures;
+        
+        if (_userAgent) {
+            _webView.customUserAgent = _userAgent;
+        }
 #if defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000 /* __IPHONE_11_0 */
-    if ([_webView.scrollView respondsToSelector:@selector(setContentInsetAdjustmentBehavior:)]) {
-      _webView.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }
+        if ([_webView.scrollView respondsToSelector:@selector(setContentInsetAdjustmentBehavior:)]) {
+            _webView.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        }
 #endif
-
-    [self addSubview:_webView];
-    [self setHideKeyboardAccessoryView: _savedHideKeyboardAccessoryView];
-    [self visitSource];
-  }
+        
+        [self addSubview:_webView];
+        [self setHideKeyboardAccessoryView: _savedHideKeyboardAccessoryView];
+        [self visitSource];
+    }
 }
 
 // Update webview property when the component prop changes.
 - (void)setAllowsBackForwardNavigationGestures:(BOOL)allowsBackForwardNavigationGestures {
-  _allowsBackForwardNavigationGestures = allowsBackForwardNavigationGestures;
-  _webView.allowsBackForwardNavigationGestures = _allowsBackForwardNavigationGestures;
+    _allowsBackForwardNavigationGestures = allowsBackForwardNavigationGestures;
+    _webView.allowsBackForwardNavigationGestures = _allowsBackForwardNavigationGestures;
 }
 
 
@@ -174,14 +173,14 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
         [_webView removeFromSuperview];
         _webView = nil;
     }
-
+    
     [super removeFromSuperview];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context{
     if ([keyPath isEqual:@"estimatedProgress"] && object == self.webView) {
         if(_onLoadingProgress){
-             NSMutableDictionary<NSString *, id> *event = [self baseEvent];
+            NSMutableDictionary<NSString *, id> *event = [self baseEvent];
             [event addEntriesFromDictionary:@{@"progress":[NSNumber numberWithDouble:self.webView.estimatedProgress]}];
             _onLoadingProgress(event);
         }
@@ -192,15 +191,15 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
 
 - (void)setBackgroundColor:(UIColor *)backgroundColor
 {
-  _savedBackgroundColor = backgroundColor;
-  if (_webView == nil) {
-    return;
-  }
-
-  CGFloat alpha = CGColorGetAlpha(backgroundColor.CGColor);
-  self.opaque = _webView.opaque = (alpha == 1.0);
-  _webView.scrollView.backgroundColor = backgroundColor;
-  _webView.backgroundColor = backgroundColor;
+    _savedBackgroundColor = backgroundColor;
+    if (_webView == nil) {
+        return;
+    }
+    
+    CGFloat alpha = CGColorGetAlpha(backgroundColor.CGColor);
+    self.opaque = _webView.opaque = (alpha == 1.0);
+    _webView.scrollView.backgroundColor = backgroundColor;
+    _webView.backgroundColor = backgroundColor;
 }
 
 /**
@@ -208,7 +207,7 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
  *   - window.webkit.messageHandlers[MessageHandlerName].postMessage
  */
 - (void)userContentController:(WKUserContentController *)userContentController
-       didReceiveScriptMessage:(WKScriptMessage *)message
+      didReceiveScriptMessage:(WKScriptMessage *)message
 {
   if (_onMessage != nil) {
     NSMutableDictionary<NSString *, id> *event = [self baseEvent];
@@ -219,63 +218,63 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
 
 - (void)setSource:(NSDictionary *)source
 {
-  if (![_source isEqualToDictionary:source]) {
-    _source = [source copy];
-
-    if (_webView != nil) {
-      [self visitSource];
+    if (![_source isEqualToDictionary:source]) {
+        _source = [source copy];
+        
+        if (_webView != nil) {
+            [self visitSource];
+        }
     }
-  }
 }
 
 - (void)setContentInset:(UIEdgeInsets)contentInset
 {
-  _contentInset = contentInset;
-  [RCTView autoAdjustInsetsForView:self
-                    withScrollView:_webView.scrollView
-                      updateOffset:NO];
+    _contentInset = contentInset;
+    [RCTView autoAdjustInsetsForView:self
+                      withScrollView:_webView.scrollView
+                        updateOffset:NO];
 }
 
 - (void)refreshContentInset
 {
-  [RCTView autoAdjustInsetsForView:self
-                    withScrollView:_webView.scrollView
-                      updateOffset:YES];
+    [RCTView autoAdjustInsetsForView:self
+                      withScrollView:_webView.scrollView
+                        updateOffset:YES];
 }
 
 - (void)visitSource
 {
-  // Check for a static html source first
-  NSString *html = [RCTConvert NSString:_source[@"html"]];
-  if (html) {
-    NSURL *baseURL = [RCTConvert NSURL:_source[@"baseUrl"]];
-    if (!baseURL) {
-      baseURL = [NSURL URLWithString:@"about:blank"];
-    }
-    if (_highlightEnabled){
-        NSString* modifiedHtmlString = [NSString stringWithFormat:@"<html><head><style type=\"text/css\">.highlight { background-color: yellow }</style></head><body>%@</body></html>", html];
-        [_webView loadHTMLString:modifiedHtmlString baseURL:baseURL];
-    } else {
-        [_webView loadHTMLString:html baseURL:baseURL];
+    // Check for a static html source first
+    NSString *html = [RCTConvert NSString:_source[@"html"]];
+    if (html) {
+        NSURL *baseURL = [RCTConvert NSURL:_source[@"baseUrl"]];
+        if (!baseURL) {
+            baseURL = [NSURL URLWithString:@"about:blank"];
+        }
+        if (_highlightEnabled){
+            NSString* modifiedHtmlString = [NSString stringWithFormat:@"<html><head><style type=\"text/css\">.highlight { background-color: yellow }</style></head><body>%@</body></html>", html];
+            [_webView loadHTMLString:modifiedHtmlString baseURL:baseURL];
+        } else {
+            [_webView loadHTMLString:html baseURL:baseURL];
+        }
+        
+        return;
     }
     
-    return;
-  }
-
-  NSURLRequest *request = [RCTConvert NSURLRequest:_source];
-  // Because of the way React works, as pages redirect, we actually end up
-  // passing the redirect urls back here, so we ignore them if trying to load
-  // the same url. We'll expose a call to 'reload' to allow a user to load
-  // the existing page.
-  if ([request.URL isEqual:_webView.URL]) {
-    return;
-  }
-  if (!request.URL) {
-    // Clear the webview
-    [_webView loadHTMLString:@"" baseURL:nil];
-    return;
-  }
-  [_webView loadRequest:request];
+    NSURLRequest *request = [RCTConvert NSURLRequest:_source];
+    // Because of the way React works, as pages redirect, we actually end up
+    // passing the redirect urls back here, so we ignore them if trying to load
+    // the same url. We'll expose a call to 'reload' to allow a user to load
+    // the existing page.
+    if ([request.URL isEqual:_webView.URL]) {
+        return;
+    }
+    if (!request.URL) {
+        // Clear the webview
+        [_webView loadHTMLString:@"" baseURL:nil];
+        return;
+    }
+    [_webView loadRequest:request];
 }
 
 -(void)setHideKeyboardAccessoryView:(BOOL)hideKeyboardAccessoryView
@@ -284,83 +283,83 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
         _savedHideKeyboardAccessoryView = hideKeyboardAccessoryView;
         return;
     }
-
+    
     if (_savedHideKeyboardAccessoryView == false) {
         return;
     }
-
+    
     UIView* subview;
-
+    
     for (UIView* view in _webView.scrollView.subviews) {
         if([[view.class description] hasPrefix:@"WK"])
             subview = view;
     }
-
+    
     if(subview == nil) return;
-
+    
     NSString* name = [NSString stringWithFormat:@"%@_SwizzleHelperWK", subview.class.superclass];
     Class newClass = NSClassFromString(name);
-
+    
     if(newClass == nil)
     {
         newClass = objc_allocateClassPair(subview.class, [name cStringUsingEncoding:NSASCIIStringEncoding], 0);
         if(!newClass) return;
-
+        
         Method method = class_getInstanceMethod([_SwizzleHelperWK class], @selector(inputAccessoryView));
         class_addMethod(newClass, @selector(inputAccessoryView), method_getImplementation(method), method_getTypeEncoding(method));
-
+        
         objc_registerClassPair(newClass);
     }
-
+    
     object_setClass(subview, newClass);
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 {
-  scrollView.decelerationRate = _decelerationRate;
+    scrollView.decelerationRate = _decelerationRate;
 }
 
 - (void)setScrollEnabled:(BOOL)scrollEnabled
 {
-  _scrollEnabled = scrollEnabled;
-  _webView.scrollView.scrollEnabled = scrollEnabled;
+    _scrollEnabled = scrollEnabled;
+    _webView.scrollView.scrollEnabled = scrollEnabled;
 }
 
 - (void)postMessage:(NSString *)message
 {
-  NSDictionary *eventInitDict = @{@"data": message};
-  NSString *source = [NSString
-    stringWithFormat:@"window.dispatchEvent(new MessageEvent('message', %@));",
-    RCTJSONStringify(eventInitDict, NULL)
-  ];
-  [self injectJavaScript: source];
+    NSDictionary *eventInitDict = @{@"data": message};
+    NSString *source = [NSString
+                        stringWithFormat:@"window.dispatchEvent(new MessageEvent('message', %@));",
+                        RCTJSONStringify(eventInitDict, NULL)
+                        ];
+    [self injectJavaScript: source];
 }
 
 - (void)layoutSubviews
 {
-  [super layoutSubviews];
-
-  // Ensure webview takes the position and dimensions of RNCWKWebView
-  _webView.frame = self.bounds;
+    [super layoutSubviews];
+    
+    // Ensure webview takes the position and dimensions of RNCWKWebView
+    _webView.frame = self.bounds;
 }
 
 - (NSMutableDictionary<NSString *, id> *)baseEvent
 {
-  NSDictionary *event = @{
-    @"url": _webView.URL.absoluteString ?: @"",
-    @"title": _webView.title,
-    @"loading" : @(_webView.loading),
-    @"canGoBack": @(_webView.canGoBack),
-    @"canGoForward" : @(_webView.canGoForward)
-  };
-  return [[NSMutableDictionary alloc] initWithDictionary: event];
+    NSDictionary *event = @{
+                            @"url": _webView.URL.absoluteString ?: @"",
+                            @"title": _webView.title,
+                            @"loading" : @(_webView.loading),
+                            @"canGoBack": @(_webView.canGoBack),
+                            @"canGoForward" : @(_webView.canGoForward)
+                            };
+    return [[NSMutableDictionary alloc] initWithDictionary: event];
 }
 
 #pragma mark - WKNavigationDelegate methods
 
 /**
-* alert
-*/
+ * alert
+ */
 - (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(void))completionHandler
 {
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:message preferredStyle:UIAlertControllerStyleAlert];
@@ -368,12 +367,12 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
         completionHandler();
     }]];
     [[self topViewController] presentViewController:alert animated:YES completion:NULL];
-
+    
 }
 
 /**
-* confirm
-*/
+ * confirm
+ */
 - (void)webView:(WKWebView *)webView runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL))completionHandler{
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:message preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
@@ -386,8 +385,8 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
 }
 
 /**
-* prompt
-*/
+ * prompt
+ */
 - (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString *))completionHandler{
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"" message:prompt preferredStyle:UIAlertControllerStyleAlert];
     [alert addTextFieldWithConfigurationHandler:^(UITextField *textField) {
@@ -404,39 +403,39 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
  * topViewController
  */
 -(UIViewController *)topViewController{
-   UIViewController *controller = [self topViewControllerWithRootViewController:[self getCurrentWindow].rootViewController];
-   return controller;
+    UIViewController *controller = [self topViewControllerWithRootViewController:[self getCurrentWindow].rootViewController];
+    return controller;
 }
 
 /**
  * topViewControllerWithRootViewController
  */
 -(UIViewController *)topViewControllerWithRootViewController:(UIViewController *)viewController{
-  if (viewController==nil) return nil;
-  if (viewController.presentedViewController!=nil) {
-    return [self topViewControllerWithRootViewController:viewController.presentedViewController];
-  } else if ([viewController isKindOfClass:[UITabBarController class]]){
-    return [self topViewControllerWithRootViewController:[(UITabBarController *)viewController selectedViewController]];
-  } else if ([viewController isKindOfClass:[UINavigationController class]]){
-    return [self topViewControllerWithRootViewController:[(UINavigationController *)viewController visibleViewController]];
-  } else {
-    return viewController;
-  }
+    if (viewController==nil) return nil;
+    if (viewController.presentedViewController!=nil) {
+        return [self topViewControllerWithRootViewController:viewController.presentedViewController];
+    } else if ([viewController isKindOfClass:[UITabBarController class]]){
+        return [self topViewControllerWithRootViewController:[(UITabBarController *)viewController selectedViewController]];
+    } else if ([viewController isKindOfClass:[UINavigationController class]]){
+        return [self topViewControllerWithRootViewController:[(UINavigationController *)viewController visibleViewController]];
+    } else {
+        return viewController;
+    }
 }
 /**
  * getCurrentWindow
  */
 -(UIWindow *)getCurrentWindow{
-  UIWindow *window = [UIApplication sharedApplication].keyWindow;
-  if (window.windowLevel!=UIWindowLevelNormal) {
-    for (UIWindow *wid in [UIApplication sharedApplication].windows) {
-      if (window.windowLevel==UIWindowLevelNormal) {
-        window = wid;
-        break;
-      }
+    UIWindow *window = [UIApplication sharedApplication].keyWindow;
+    if (window.windowLevel!=UIWindowLevelNormal) {
+        for (UIWindow *wid in [UIApplication sharedApplication].windows) {
+            if (window.windowLevel==UIWindowLevelNormal) {
+                window = wid;
+                break;
+            }
+        }
     }
-  }
-  return window;
+    return window;
 }
 
 
@@ -448,52 +447,52 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
   decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
                   decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
 {
-  static NSDictionary<NSNumber *, NSString *> *navigationTypes;
-  static dispatch_once_t onceToken;
-
-  dispatch_once(&onceToken, ^{
-    navigationTypes = @{
-      @(WKNavigationTypeLinkActivated): @"click",
-      @(WKNavigationTypeFormSubmitted): @"formsubmit",
-      @(WKNavigationTypeBackForward): @"backforward",
-      @(WKNavigationTypeReload): @"reload",
-      @(WKNavigationTypeFormResubmitted): @"formresubmit",
-      @(WKNavigationTypeOther): @"other",
-    };
-  });
-
-  WKNavigationType navigationType = navigationAction.navigationType;
-  NSURLRequest *request = navigationAction.request;
-
-  if (_onShouldStartLoadWithRequest) {
-    NSMutableDictionary<NSString *, id> *event = [self baseEvent];
-    [event addEntriesFromDictionary: @{
-      @"url": (request.URL).absoluteString,
-      @"navigationType": navigationTypes[@(navigationType)]
-    }];
-    if (![self.delegate webView:self
-      shouldStartLoadForRequest:event
-                   withCallback:_onShouldStartLoadWithRequest]) {
-      decisionHandler(WKNavigationResponsePolicyCancel);
-      return;
+    static NSDictionary<NSNumber *, NSString *> *navigationTypes;
+    static dispatch_once_t onceToken;
+    
+    dispatch_once(&onceToken, ^{
+        navigationTypes = @{
+                            @(WKNavigationTypeLinkActivated): @"click",
+                            @(WKNavigationTypeFormSubmitted): @"formsubmit",
+                            @(WKNavigationTypeBackForward): @"backforward",
+                            @(WKNavigationTypeReload): @"reload",
+                            @(WKNavigationTypeFormResubmitted): @"formresubmit",
+                            @(WKNavigationTypeOther): @"other",
+                            };
+    });
+    
+    WKNavigationType navigationType = navigationAction.navigationType;
+    NSURLRequest *request = navigationAction.request;
+    
+    if (_onShouldStartLoadWithRequest) {
+        NSMutableDictionary<NSString *, id> *event = [self baseEvent];
+        [event addEntriesFromDictionary: @{
+                                           @"url": (request.URL).absoluteString,
+                                           @"navigationType": navigationTypes[@(navigationType)]
+                                           }];
+        if (![self.delegate webView:self
+          shouldStartLoadForRequest:event
+                       withCallback:_onShouldStartLoadWithRequest]) {
+            decisionHandler(WKNavigationResponsePolicyCancel);
+            return;
+        }
     }
-  }
-
-  if (_onLoadingStart) {
-    // We have this check to filter out iframe requests and whatnot
-    BOOL isTopFrame = [request.URL isEqual:request.mainDocumentURL];
-    if (isTopFrame) {
-      NSMutableDictionary<NSString *, id> *event = [self baseEvent];
-      [event addEntriesFromDictionary: @{
-        @"url": (request.URL).absoluteString,
-        @"navigationType": navigationTypes[@(navigationType)]
-      }];
-      _onLoadingStart(event);
+    
+    if (_onLoadingStart) {
+        // We have this check to filter out iframe requests and whatnot
+        BOOL isTopFrame = [request.URL isEqual:request.mainDocumentURL];
+        if (isTopFrame) {
+            NSMutableDictionary<NSString *, id> *event = [self baseEvent];
+            [event addEntriesFromDictionary: @{
+                                               @"url": (request.URL).absoluteString,
+                                               @"navigationType": navigationTypes[@(navigationType)]
+                                               }];
+            _onLoadingStart(event);
+        }
     }
-  }
-
-  // Allow all navigation by default
-  decisionHandler(WKNavigationResponsePolicyAllow);
+    
+    // Allow all navigation by default
+    decisionHandler(WKNavigationResponsePolicyAllow);
 }
 
 /**
@@ -504,47 +503,47 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
   didFailProvisionalNavigation:(WKNavigation *)navigation
                      withError:(NSError *)error
 {
-  if (_onLoadingError) {
-    if ([error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
-      // NSURLErrorCancelled is reported when a page has a redirect OR if you load
-      // a new URL in the WebView before the previous one came back. We can just
-      // ignore these since they aren't real errors.
-      // http://stackoverflow.com/questions/1024748/how-do-i-fix-nsurlerrordomain-error-999-in-iphone-3-0-os
-      return;
+    if (_onLoadingError) {
+        if ([error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
+            // NSURLErrorCancelled is reported when a page has a redirect OR if you load
+            // a new URL in the WebView before the previous one came back. We can just
+            // ignore these since they aren't real errors.
+            // http://stackoverflow.com/questions/1024748/how-do-i-fix-nsurlerrordomain-error-999-in-iphone-3-0-os
+            return;
+        }
+        
+        if ([error.domain isEqualToString:@"WebKitErrorDomain"] && error.code == 102) {
+            // Error code 102 "Frame load interrupted" is raised by the WKWebView
+            // when the URL is from an http redirect. This is a common pattern when
+            // implementing OAuth with a WebView.
+            return;
+        }
+        
+        NSMutableDictionary<NSString *, id> *event = [self baseEvent];
+        [event addEntriesFromDictionary:@{
+                                          @"didFailProvisionalNavigation": @YES,
+                                          @"domain": error.domain,
+                                          @"code": @(error.code),
+                                          @"description": error.localizedDescription,
+                                          }];
+        _onLoadingError(event);
     }
-
-    if ([error.domain isEqualToString:@"WebKitErrorDomain"] && error.code == 102) {
-      // Error code 102 "Frame load interrupted" is raised by the WKWebView
-      // when the URL is from an http redirect. This is a common pattern when
-      // implementing OAuth with a WebView.
-      return;
-    }
-
-    NSMutableDictionary<NSString *, id> *event = [self baseEvent];
-    [event addEntriesFromDictionary:@{
-      @"didFailProvisionalNavigation": @YES,
-      @"domain": error.domain,
-      @"code": @(error.code),
-      @"description": error.localizedDescription,
-    }];
-    _onLoadingError(event);
-  }
-
-  [self setBackgroundColor: _savedBackgroundColor];
+    
+    [self setBackgroundColor: _savedBackgroundColor];
 }
 
 - (void)evaluateJS:(NSString *)js
           thenCall: (void (^)(NSString*)) callback
 {
-  [self.webView evaluateJavaScript: js completionHandler: ^(id result, NSError *error) {
-    if (error == nil) {
-      if (callback != nil) {
-        callback([NSString stringWithFormat:@"%@", result]);
-      }
-    } else {
-      RCTLogError(@"Error evaluating injectedJavaScript: This is possibly due to an unsupported return type. Try adding true to the end of your injectedJavaScript string.");
-    }
-  }];
+    [self.webView evaluateJavaScript: js completionHandler: ^(id result, NSError *error) {
+        if (error == nil) {
+            if (callback != nil) {
+                callback([NSString stringWithFormat:@"%@", result]);
+            }
+        } else {
+            RCTLogError(@"Error evaluating injectedJavaScript: This is possibly due to an unsupported return type. Try adding true to the end of your injectedJavaScript string.");
+        }
+    }];
 }
 
 /**
@@ -554,73 +553,93 @@ static NSString *const MessageHandlerName = @"ReactNativeWebview";
 - (void)      webView:(WKWebView *)webView
   didFinishNavigation:(WKNavigation *)navigation
 {
-  if (_injectedJavaScript) {
-    [self evaluateJS: _injectedJavaScript thenCall: ^(NSString *jsEvaluationValue) {
-      NSMutableDictionary *event = [self baseEvent];
-      event[@"jsEvaluationValue"] = jsEvaluationValue;
-
-      if (self.onLoadingFinish) {
-        self.onLoadingFinish(event);
-      }
-    }];
-  } else if (_onLoadingFinish) {
-    _onLoadingFinish([self baseEvent]);
-  }
-
-  [self setBackgroundColor: _savedBackgroundColor];
-  if (_highlightEnabled){
-      //Loading Rangy Javascript files after the page has loaded
-      NSString *rangyCorePath = [[NSBundle mainBundle] pathForResource:@"rangy" ofType:@"js"];
-      NSString *rangyCoreContent = [NSString stringWithContentsOfFile:rangyCorePath encoding:NSUTF8StringEncoding error:nil];
-      [webView evaluateJavaScript:rangyCoreContent completionHandler:nil];
-  }
-
+    if (_highlightEnabled){
+        //Loading Rangy Javascript files after the page has loaded
+        NSString *rangyCorePath = [[NSBundle mainBundle] pathForResource:@"rangy" ofType:@"js"];
+        NSString *rangyCoreContent = [NSString stringWithContentsOfFile:rangyCorePath encoding:NSUTF8StringEncoding error:nil];
+        [webView evaluateJavaScript:rangyCoreContent completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+            //Then we load the highlight ranges
+            if (_injectedJavaScript) {
+                [self evaluateJS: _injectedJavaScript thenCall: ^(NSString *jsEvaluationValue) {
+                    NSMutableDictionary *event = [self baseEvent];
+                    event[@"jsEvaluationValue"] = jsEvaluationValue;
+                    
+                    if (self.onLoadingFinish) {
+                        self.onLoadingFinish(event);
+                    }
+                }];
+            } else if (_onLoadingFinish) {
+                _onLoadingFinish([self baseEvent]);
+            }
+            
+            [self setBackgroundColor: _savedBackgroundColor];
+        }];
+        
+    } else if (_injectedJavaScript) {
+        [self evaluateJS: _injectedJavaScript thenCall: ^(NSString *jsEvaluationValue) {
+            NSMutableDictionary *event = [self baseEvent];
+            event[@"jsEvaluationValue"] = jsEvaluationValue;
+            
+            if (self.onLoadingFinish) {
+                self.onLoadingFinish(event);
+            }
+        }];
+        [self setBackgroundColor: _savedBackgroundColor];
+    } else if (_onLoadingFinish) {
+        _onLoadingFinish([self baseEvent]);
+        [self setBackgroundColor: _savedBackgroundColor];
+    }
+    
+    
+    
+    
 }
 
 - (void)injectJavaScript:(NSString *)script
 {
-  [self evaluateJS: script thenCall: nil];
+    [self evaluateJS: script thenCall: nil];
 }
 
 - (void)goForward
 {
-  [_webView goForward];
+    [_webView goForward];
 }
 
 - (void)goBack
 {
-  [_webView goBack];
+    [_webView goBack];
 }
 
 - (void)reload
 {
-  /**
-   * When the initial load fails due to network connectivity issues,
-   * [_webView reload] doesn't reload the webpage. Therefore, we must
-   * manually call [_webView loadRequest:request].
-   */
-  NSURLRequest *request = [RCTConvert NSURLRequest:self.source];
-  if (request.URL && !_webView.URL.absoluteString.length) {
-    [_webView loadRequest:request];
-  }
-  else {
-    [_webView reload];
-  }
+    /**
+     * When the initial load fails due to network connectivity issues,
+     * [_webView reload] doesn't reload the webpage. Therefore, we must
+     * manually call [_webView loadRequest:request].
+     */
+    NSURLRequest *request = [RCTConvert NSURLRequest:self.source];
+    if (request.URL && !_webView.URL.absoluteString.length) {
+        [_webView loadRequest:request];
+    }
+    else {
+        [_webView reload];
+    }
 }
 
 - (void)stopLoading
 {
-  [_webView stopLoading];
+    [_webView stopLoading];
 }
 
 - (void)setBounces:(BOOL)bounces
 {
-  _bounces = bounces;
-  _webView.scrollView.bounces = bounces;
+    _bounces = bounces;
+    _webView.scrollView.bounces = bounces;
 }
-- (void)htmlContentChanged:(nonnull NSString *)newHTML {
+- (void)htmlContentChanged:(nonnull NSString *)newHTML ranges:(nonnull NSString *) ranges {
     NSMutableDictionary *event = [self baseEvent];
     event[@"data"] = newHTML;
+    event[@"ranges"] = ranges;
     if (self.onHtmlChanged != nil) {
         self.onHtmlChanged(event);
     }
