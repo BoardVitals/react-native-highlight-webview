@@ -1227,24 +1227,9 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     }
     /**BV**/
     public void onHtmlChanged(String newHtml) {
-      if (mRNCWebViewClient != null) {
-        WebView webView = this;
-        webView.post(new Runnable() {
-          @Override
-          public void run() {
-            if (mRNCWebViewClient == null) {
-              return;
-            }
-            WritableMap data = mRNCWebViewClient.createWebViewEvent(webView, webView.getUrl());
-            data.putString("data", newHtml);
-            dispatchEvent(webView, new TopHtmlChangedEvent(webView.getId(), data));
-          }
-        });
-      } else {
-        WritableMap eventData = Arguments.createMap();
-        eventData.putString("data", newHtml);
-        dispatchEvent(this, new TopHtmlChangedEvent(this.getId(), eventData));
-      }
+      WritableMap eventData = Arguments.createMap();
+      eventData.putString("data", newHtml);
+      dispatchEvent(this, new TopHtmlChangedEvent(this.getId(), eventData));
     }
 
     public void onMessage(String message) {

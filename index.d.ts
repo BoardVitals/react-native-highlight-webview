@@ -2,7 +2,7 @@ import { Component } from 'react';
 // eslint-disable-next-line
 import { IOSWebViewProps, AndroidWebViewProps } from './lib/WebViewTypes';
 
-export { WebViewMessageEvent, WebViewNavigation } from "./lib/WebViewTypes";
+export { WebViewMessageEvent, WebViewHtmlChangedEvent, WebViewNavigation } from "./lib/WebViewTypes";
 
 export type WebViewProps = IOSWebViewProps & AndroidWebViewProps;
 
