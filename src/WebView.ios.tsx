@@ -230,7 +230,7 @@ class WebView extends React.Component<IOSWebViewProps, State> {
     });
     this.updateNavigationState(event);
   };
-
+  /**BV**/
   onHtmlChanged = (event: WebViewHtmlChangedEvent) => {
     const { onHtmlChanged } = this.props;
     if (onHtmlChanged) {
