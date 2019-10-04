@@ -69,7 +69,7 @@
     [self evaluateJavaScript:@"highlightSelectedText()" completionHandler:^(id _Nullable newHtml, NSError * _Nullable error) {
          [self evaluateJavaScript:@"getHighlights()" completionHandler:^(id _Nullable highlights, NSError * _Nullable error) {
             if (self.delegate != nil) {
-                [self.delegate htmlContentChanged:newHtml];
+                [self.delegate htmlContentChanged:newHtml ranges:highlights];
             }
          }];
     }];
@@ -79,7 +79,7 @@
     [self evaluateJavaScript:@"removeHighlightFromSelectedText()" completionHandler:^(id _Nullable newHtml, NSError * _Nullable error) {
         [self evaluateJavaScript:@"getHighlights()" completionHandler:^(id _Nullable highlights, NSError * _Nullable error) {
             if (self.delegate != nil) {
-                [self.delegate htmlContentChanged:newHtml];
+                [self.delegate htmlContentChanged:newHtml ranges:highlights];
             }
         }];
     }];

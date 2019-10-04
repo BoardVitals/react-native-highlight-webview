@@ -115,9 +115,10 @@ export interface WebViewHttpError extends WebViewNativeEvent {
   description: string;
   statusCode: number;
 }
-
+/**BV**/
 export interface WebViewHtmlChanged extends WebViewNativeEvent {
   data: string;
+  ranges: string;
 }
 
 export type WebViewEvent = NativeSyntheticEvent<WebViewNativeEvent>;
@@ -130,6 +131,7 @@ export type WebViewNavigationEvent = NativeSyntheticEvent<WebViewNavigation>;
 
 export type WebViewMessageEvent = NativeSyntheticEvent<WebViewMessage>;
 
+/**BV**/
 export type WebViewHtmlChangedEvent = NativeSyntheticEvent<WebViewHtmlChanged>;
 
 export type WebViewErrorEvent = NativeSyntheticEvent<WebViewError>;
@@ -232,6 +234,7 @@ export interface CommonNativeWebViewProps extends ViewProps {
   onLoadingStart: (event: WebViewNavigationEvent) => void;
   onHttpError: (event: WebViewHttpErrorEvent) => void;
   onMessage: (event: WebViewMessageEvent) => void;
+  /**BV**/
   onHtmlChanged: (event: WebViewHtmlChangedEvent) => void;
   onShouldStartLoadWithRequest: (event: WebViewNavigationEvent) => void;
   showsHorizontalScrollIndicator?: boolean;

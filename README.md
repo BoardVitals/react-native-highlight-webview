@@ -44,17 +44,18 @@ class MyWebComponent extends Component {
   render() {
     return (
       <WebView
-              onHtmlChanged={event => Alert.alert('HTML Changed:', event.nativeEvent.data)}
-              style={{ flex: 0, width: 400, height: 200 }}
-              originWhitelist={'*'}
-              javaScriptEnabled
-              source={{html: question.get('safe_name')}}
+              onHtmlChanged={event => this.props.highlightCreateOrUpdate(quizId, questionId, event.nativeEvent.data, event.nativeEvent.ranges)}
+               style={{ flex: 0, width: 400, height: 200 }}
+               source={{html: highlightFound ? highlightFound.stem : question.get('safe_name')}}
+               injectedJavaScript={highlightFound ? `setHighlights("${highlightFound.ranges}")` : null}
+               originWhitelist={'*'}
+               javaScriptEnabled
             />
     );
   }
 }
 ```
-## NOTE: If onHtmlChanged prop is passed to the component, highlight functionality is enabled and rangy library is injected into the library. Otherwise, the webview behaves likes the standard webview from the forked project. rangy.js file has to be located in the root iOS folder and added to the project target for iOS and app/src/main/assets folder for android
+## NOTE: If onHtmlChanged prop is passed to the component, highlight functionality is enabled and rangy library is injected into the library. Otherwise, the webview behaves likes the standard webview from the forked project. rangy.js file has to be located in the root iOS folder and added to the project target for iOS and app/src/main/assets folder for android. injectedJavaScript is used to load the previous highlight ranges into the rangy library after the new html code has finished loading. This is also only done if onHtmlChanged prop is passed
 
 
 For more, read the [API Reference](./docs/Reference.md) and [Guide](./docs/Guide.md). If you're interested in contributing, check out the [Contributing Guide](./docs/Contributing.md).

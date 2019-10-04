@@ -967,25 +967,39 @@ static NSDictionary* customCertificatesForHost;
 - (void)      webView:(WKWebView *)webView
   didFinishNavigation:(WKNavigation *)navigation
 {
-  if (_injectedJavaScript) {
-    [self evaluateJS: _injectedJavaScript thenCall: ^(NSString *jsEvaluationValue) {
-      NSMutableDictionary *event = [self baseEvent];
-      event[@"jsEvaluationValue"] = jsEvaluationValue;
-
-      if (self.onLoadingFinish) {
-        self.onLoadingFinish(event);
-      }
-    }];
-  } else if (_onLoadingFinish) {
-    _onLoadingFinish([self baseEvent]);
-  }
   /**BV**/
-  if (_highlightEnabled){
-      //Loading Rangy Javascript files after the page has loaded
-      NSString *rangyCorePath = [[NSBundle mainBundle] pathForResource:@"rangy" ofType:@"js"];
-      NSString *rangyCoreContent = [NSString stringWithContentsOfFile:rangyCorePath encoding:NSUTF8StringEncoding error:nil];
-      [webView evaluateJavaScript:rangyCoreContent completionHandler:nil];
-  }
+      if (_highlightEnabled){
+         //Loading Rangy Javascript files after the page has loaded
+         NSString *rangyCorePath = [[NSBundle mainBundle] pathForResource:@"rangy" ofType:@"js"];
+         NSString *rangyCoreContent = [NSString stringWithContentsOfFile:rangyCorePath encoding:NSUTF8StringEncoding error:nil];
+         [webView evaluateJavaScript:rangyCoreContent completionHandler:^(id _Nullable result, NSError * _Nullable error) {
+             //Then we load the highlight ranges
+             if (_injectedJavaScript) {
+                 [self evaluateJS: _injectedJavaScript thenCall: ^(NSString *jsEvaluationValue) {
+                     NSMutableDictionary *event = [self baseEvent];
+                     event[@"jsEvaluationValue"] = jsEvaluationValue;
+
+                     if (self.onLoadingFinish) {
+                         self.onLoadingFinish(event);
+                     }
+                 }];
+             } else if (_onLoadingFinish) {
+                 _onLoadingFinish([self baseEvent]);
+             }
+         }];
+
+     } else if (_injectedJavaScript) {
+         [self evaluateJS: _injectedJavaScript thenCall: ^(NSString *jsEvaluationValue) {
+             NSMutableDictionary *event = [self baseEvent];
+             event[@"jsEvaluationValue"] = jsEvaluationValue;
+
+             if (self.onLoadingFinish) {
+                 self.onLoadingFinish(event);
+             }
+         }];
+     } else if (_onLoadingFinish) {
+         _onLoadingFinish([self baseEvent]);
+     }
 }
 
 - (void)injectJavaScript:(NSString *)script
@@ -1050,9 +1064,10 @@ static NSDictionary* customCertificatesForHost;
   return request;
 }
 
-- (void)htmlContentChanged:(nonnull NSString *)newHTML {
+- (void)htmlContentChanged:(nonnull NSString *)newHTML ranges:(nonnull NSString *) ranges {
     NSMutableDictionary *event = [self baseEvent];
     event[@"data"] = newHTML;
+    event[@"ranges"] = ranges;
     if (self.onHtmlChanged != nil) {
         self.onHtmlChanged(event);
     }

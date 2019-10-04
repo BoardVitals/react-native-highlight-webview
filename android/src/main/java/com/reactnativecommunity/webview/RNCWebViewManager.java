@@ -729,10 +729,6 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
 
       if (!mLastLoadFailed) {
         RNCWebView reactWebView = (RNCWebView) webView;
-
-        reactWebView.callInjectedJavaScript();
-
-        emitFinishEvent(webView, url);
         /**BV**/
         if (reactWebView.highlightEnabled) {
           //Inject Rangy Javascript files
@@ -744,10 +740,16 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
             in.close(); //close file
             String rangyScript = new String(buffer);
             reactWebView.evaluateJavascriptWithFallback(rangyScript);
+            reactWebView.callInjectedJavaScript();
+            emitFinishEvent(webView, url);
 
           } catch (final Throwable tx) {
 
           }
+        }
+        else {
+          reactWebView.callInjectedJavaScript();
+          emitFinishEvent(webView, url);
         }
       }
     }
@@ -1076,18 +1078,30 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
                     evaluateJavascript("javascript:highlightSelectedText()", new ValueCallback<String>() {
                       @Override
                       public void onReceiveValue(String value) {
-                        String result = removeUTFCharacters(value).toString();
-                        onHtmlChanged(result);
-                        mode.finish();
+                        String result = removeUTFCharacters(value).toString().replaceAll("^\"|\"$", "");
+                         evaluateJavascript("javascript:getHighlights()", new ValueCallback<String>() {
+                           @Override
+                           public void onReceiveValue(String value) {
+                             String ranges = value.replaceAll("^\"|\"$", "");
+                             onHtmlChanged(result, ranges);
+                             mode.finish();
+                           }
+                         });
                       }
                     });
                   } else { // Highlighted => Remove highlight
                     evaluateJavascript("javascript:removeHighlightFromSelectedText()", new ValueCallback<String>() {
                       @Override
                       public void onReceiveValue(String value) {
-                        String result = removeUTFCharacters(value).toString();
-                        onHtmlChanged(result);
-                        mode.finish();
+                        String result = removeUTFCharacters(value).toString().replaceAll("^\"|\"$", "");
+                         evaluateJavascript("javascript:getHighlights()", new ValueCallback<String>() {
+                           @Override
+                           public void onReceiveValue(String value) {
+                             String ranges = value.replaceAll("^\"|\"$", "");
+                             onHtmlChanged(result, ranges);
+                             mode.finish();
+                           }
+                         });
                       }
                     });
                   }
@@ -1228,9 +1242,10 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
       }
     }
     /**BV**/
-    public void onHtmlChanged(String newHtml) {
+    public void onHtmlChanged(String newHtml, String ranges) {
       WritableMap eventData = Arguments.createMap();
       eventData.putString("data", newHtml);
+      eventData.putString("ranges", ranges)
       dispatchEvent(this, new TopHtmlChangedEvent(this.getId(), eventData));
     }
 
