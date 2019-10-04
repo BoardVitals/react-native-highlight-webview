@@ -2,6 +2,7 @@ package com.reactnativecommunity.webview;
 /**BV**/
 import java.io.InputStream;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -999,7 +1000,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     protected boolean sendContentSizeChangeEvents = false;
     private OnScrollDispatchHelper mOnScrollDispatchHelper;
     protected boolean hasScrollEvent = false;
-
+    private ActionMode.Callback mActionModeCallback;
 
     /**BV**/
     public static StringBuffer removeUTFCharacters(String data) {
