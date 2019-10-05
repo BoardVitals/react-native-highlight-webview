@@ -1005,9 +1005,8 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
    * to call {@link WebView#destroy} on activity destroy event and also to clear the client
    */
   protected static class RNCWebView extends WebView implements LifecycleEventListener {
-    protected @Nullable
-    protected String injectedJS;
-    protected String injectedRanges;
+    protected @Nullable String injectedJS;
+    protected @Nullable String injectedRanges;
     protected boolean messagingEnabled = false;
     /**BV**/
     protected boolean highlightEnabled = false;
