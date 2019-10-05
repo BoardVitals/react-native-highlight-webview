@@ -451,14 +451,7 @@ static NSDictionary* customCertificatesForHost;
         if (!baseURL) {
             baseURL = [NSURL URLWithString:@"about:blank"];
         }
-        /**BV**/
-        if (_highlightEnabled){
-          NSString* modifiedHtmlString = [NSString stringWithFormat:@"<html><head><style type=\"text/css\">.highlight { background-color: yellow }</style></head><body>%@</body></html>", html];
-          [_webView loadHTMLString:modifiedHtmlString baseURL:baseURL];
-        } else {
-          [_webView loadHTMLString:html baseURL:baseURL];
-        }
-
+        [_webView loadHTMLString:html baseURL:baseURL];
         return;
     }
 

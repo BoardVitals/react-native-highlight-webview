@@ -451,12 +451,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
           view.loadDataWithBaseURL(
               source.getString("baseUrl"), html, HTML_MIME_TYPE, HTML_ENCODING, null);
         } else {
-//          if (((RNCWebView) view).highlightEnabled) {
-            String modifiedHtmlString = "<html><head><style type=\"text/css\">.highlight { background-color: yellow }</style></head><body>" + html + "</body></html>";
-            view.loadData(modifiedHtmlString, HTML_MIME_TYPE + "; charset=" + HTML_ENCODING, null);
-//          } else {
-//            view.loadData(html, HTML_MIME_TYPE + "; charset=" + HTML_ENCODING, null);
-//          }
+          view.loadData(html, HTML_MIME_TYPE + "; charset=" + HTML_ENCODING, null);
         }
         return;
       }
