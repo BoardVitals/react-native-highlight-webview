@@ -1041,7 +1041,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     public ActionMode startActionMode(ActionMode.Callback callback, int type) {
       if (highlightEnabled) {
         mActionModeCallback = new CustomActionModeCallback();
-        return super.startActionMode(mActionModeCallback, 0);
+        return super.startActionMode(mActionModeCallback, type);
       }
       return super.startActionMode(callback, type);
     }
@@ -1245,7 +1245,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     public void onHtmlChanged(String newHtml, String ranges) {
       WritableMap eventData = Arguments.createMap();
       eventData.putString("data", newHtml);
-      eventData.putString("ranges", ranges)
+      eventData.putString("ranges", ranges);
       dispatchEvent(this, new TopHtmlChangedEvent(this.getId(), eventData));
     }
 
