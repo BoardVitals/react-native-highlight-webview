@@ -27,6 +27,7 @@
 /**BV**/
 @property (nonatomic, assign) BOOL highlightEnabled;
 @property (nonatomic, copy) NSString * _Nullable injectedJavaScript;
+@property (nonatomic, copy) NSString * _Nullable injectedRanges;
 @property (nonatomic, assign) BOOL scrollEnabled;
 @property (nonatomic, assign) BOOL sharedCookiesEnabled;
 @property (nonatomic, assign) BOOL pagingEnabled;

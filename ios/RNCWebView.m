@@ -974,6 +974,10 @@ static NSDictionary* customCertificatesForHost;
          NSString *rangyCoreContent = [NSString stringWithContentsOfFile:rangyCorePath encoding:NSUTF8StringEncoding error:nil];
          [webView evaluateJavaScript:rangyCoreContent completionHandler:^(id _Nullable result, NSError * _Nullable error) {
              //Then we load the highlight ranges
+             if (_injectedRanges) {
+               [webView evaluateJavaScript:_injectedRanges completionHandler:nil];
+             }
+             //And finally whatever script is injected
              if (_injectedJavaScript) {
                  [self evaluateJS: _injectedJavaScript thenCall: ^(NSString *jsEvaluationValue) {
                      NSMutableDictionary *event = [self baseEvent];

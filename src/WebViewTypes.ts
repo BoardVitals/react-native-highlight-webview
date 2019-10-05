@@ -224,6 +224,7 @@ export interface CommonNativeWebViewProps extends ViewProps {
   cacheEnabled?: boolean;
   incognito?: boolean;
   injectedJavaScript?: string;
+  injectedRanges?: string;
   mediaPlaybackRequiresUserAction?: boolean;
   messagingEnabled: boolean;
   highlightEnabled: boolean;
@@ -699,6 +700,8 @@ export interface WebViewSharedProps extends ViewProps {
    * when the view loads.
    */
   injectedJavaScript?: string;
+
+  injectedRanges?: string;
 
   /**
    * Boolean value that determines whether a horizontal scroll indicator is

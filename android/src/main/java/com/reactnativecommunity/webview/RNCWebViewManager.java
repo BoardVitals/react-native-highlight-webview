@@ -404,6 +404,11 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     ((RNCWebView) view).setInjectedJavaScript(injectedJavaScript);
   }
 
+  @ReactProp(name = "injectedRanges")
+  public void setInjectedRanges(WebView view, @Nullable String injectedRanges) {
+    ((RNCWebView) view).setInjectedRanges(injectedRanges);
+  }
+
   /**BV**/
   @ReactProp(name = "highlightEnabled")
   public void setHighlightEnabled(WebView view, boolean enabled) {
@@ -740,6 +745,12 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
             in.close(); //close file
             String rangyScript = new String(buffer);
             reactWebView.evaluateJavascriptWithFallback(rangyScript);
+            //Inject Rangy previous highlight ranges
+            if (reactWebView.injectedRanges != null &&
+                !TextUtils.isEmpty(reactWebView.injectedRanges)) {
+                  reactWebView.evaluateJavascriptWithFallback("(function() {\n" + reactWebView.injectedRanges + ";\n})();");
+            }
+            //Finally call whatever injected script
             reactWebView.callInjectedJavaScript();
             emitFinishEvent(webView, url);
 
@@ -995,7 +1006,8 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
    */
   protected static class RNCWebView extends WebView implements LifecycleEventListener {
     protected @Nullable
-    String injectedJS;
+    protected String injectedJS;
+    protected String injectedRanges;
     protected boolean messagingEnabled = false;
     /**BV**/
     protected boolean highlightEnabled = false;
@@ -1189,6 +1201,10 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
 
     public void setInjectedJavaScript(@Nullable String js) {
       injectedJS = js;
+    }
+
+    public void setInjectedRanges(@Nullable String js) {
+      injectedRanges = js;
     }
 
     protected RNCWebViewBridge createRNCWebViewBridge(RNCWebView webView) {
