@@ -1069,7 +1069,21 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
       // may be called multiple times if the mode is invalidated.
       @Override
       public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        return false; // Return false if nothing is done
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+          evaluateJavascript("(function(){return document.queryCommandValue('backcolor')})()", new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String value) {
+              if (value.equals("\"rgba(0, 0, 0, 0)\"")) { // Not highlighted => Add highlight
+                menu.findItem(R.id.action_highlight).setVisible(true);
+                menu.findItem(R.id.action_remove_highlight).setVisible(false);
+              } else { // Highlighted => Remove highlight
+                menu.findItem(R.id.action_highlight).setVisible(false);
+                menu.findItem(R.id.action_remove_highlight).setVisible(true);
+              }
+            }
+          });
+        }
+        return true;
       }
 
       // Called when the user selects a contextual menu item
@@ -1077,49 +1091,45 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
       public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
           if (item.getItemId() ==  R.id.action_highlight) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-              evaluateJavascript("(function(){return document.queryCommandValue('backcolor')})()", new ValueCallback<String>() {
+              evaluateJavascript("javascript:highlightSelectedText()", new ValueCallback<String>() {
                 @Override
                 public void onReceiveValue(String value) {
-                  if (value.equals("\"rgba(0, 0, 0, 0)\"")) { // Not highlighted => Add highlight
-                    evaluateJavascript("javascript:highlightSelectedText()", new ValueCallback<String>() {
-                      @Override
-                      public void onReceiveValue(String value) {
-                        String result = removeUTFCharacters(value).toString().replaceAll("^\"|\"$", "");
-                         evaluateJavascript("javascript:getHighlights()", new ValueCallback<String>() {
-                           @Override
-                           public void onReceiveValue(String value) {
-                             String ranges = value.replaceAll("^\"|\"$", "");
-                             onHtmlChanged(result, ranges);
-                             mode.finish();
-                           }
-                         });
-                      }
-                    });
-                  } else { // Highlighted => Remove highlight
-                    evaluateJavascript("javascript:removeHighlightFromSelectedText()", new ValueCallback<String>() {
-                      @Override
-                      public void onReceiveValue(String value) {
-                        String result = removeUTFCharacters(value).toString().replaceAll("^\"|\"$", "");
-                         evaluateJavascript("javascript:getHighlights()", new ValueCallback<String>() {
-                           @Override
-                           public void onReceiveValue(String value) {
-                             String ranges = value.replaceAll("^\"|\"$", "");
-                             onHtmlChanged(result, ranges);
-                             mode.finish();
-                           }
-                         });
-                      }
-                    });
-                  }
+                  String result = removeUTFCharacters(value).toString().replaceAll("^\"|\"$", "");
+                  evaluateJavascript("javascript:getHighlights()", new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String value) {
+                      String ranges = value.replaceAll("^\"|\"$", "");
+                      onHtmlChanged(result, ranges);
+                      mode.finish();
+                    }
+                  });
                 }
               });
-            }
-            else{
+            } else{
               mode.finish();
             }
             return true;
-          }
-          else {
+          } else if (item.getItemId() ==  R.id.action_remove_highlight){ // Highlighted => Remove highlight
+              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                evaluateJavascript("javascript:removeHighlightFromSelectedText()", new ValueCallback<String>() {
+                  @Override
+                  public void onReceiveValue(String value) {
+                    String result = removeUTFCharacters(value).toString().replaceAll("^\"|\"$", "");
+                    evaluateJavascript("javascript:getHighlights()", new ValueCallback<String>() {
+                      @Override
+                      public void onReceiveValue(String value) {
+                        String ranges = value.replaceAll("^\"|\"$", "");
+                        onHtmlChanged(result, ranges);
+                        mode.finish();
+                      }
+                    });
+                  }
+                });
+              } else{
+                mode.finish();
+              }
+              return true;
+           } else {
             mode.finish();
             return false;
           }

@@ -1,6 +1,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item
-        android:id="@+id/action_highlight"
-        android:orderInCategory="100"
-        android:title="ADD/REMOVE HIGHLIGHT"/>
+  <item
+    android:id="@+id/action_highlight"
+    android:orderInCategory="100"
+    android:title="HIGHLIGHT"
+    android:visible="false" />
+  <item
+    android:id="@+id/action_remove_highlight"
+    android:orderInCategory="100"
+    android:title="REMOVE HIGHLIGHT"
+    android:visible="false" />
 </menu>
