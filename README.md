@@ -55,17 +55,20 @@ class MyWebComponent extends Component {
   }
 }
 ```
-## NOTE: If onHtmlChanged prop is passed to the component, highlight functionality is enabled and rangy library is injected into the library. Otherwise, the webview behaves likes the standard webview from the forked project. rangy.js file has to be located in the root iOS folder and added to the project target for iOS and app/src/main/assets folder for android. injectedJavaScript is used to load the previous highlight ranges into the rangy library after the new html code has finished loading. This is also only done if onHtmlChanged prop is passed
 
+## For ease of use we have created a component to wrap this webview called HighlightWebView. This component will pass the html string as a source and the previous highlight ranges found as a prop so rangy library is able to load them on top of the original stem. onHtmlChanged callback includes the new stem and the new highlight ranges. Since we only need the ranges for rangy to create the highlights, we don't store the new stems in the server, only the new ranges. At some point we can remove the stem field from the highlights reducer. This component also takes care of automatically detecting the height the html document will need and adding styles to the stem that can be modified according to the specs.
 
-For more, read the [API Reference](./docs/Reference.md) and [Guide](./docs/Guide.md). If you're interested in contributing, check out the [Contributing Guide](./docs/Contributing.md).
+Example of usage:
 
-## Migrate from React Native core WebView to React Native WebView
-
-Simply install React Native WebView and then use it in place of the core WebView. Their APIs are currently identical, except that this package defaults `useWebKit={true}` unlike the built-in WebView.
-
-
-
+```jsx
+           <HighlightWebView
+              onHtmlChanged={event => this.props.highlightCreateOrUpdate(quizId, questionId, '<p></p>', event.nativeEvent.ranges)}
+              source={{html: question.get('safe_name')}}
+              injectedRanges={highlightFound ? `setHighlights("${highlightFound.ranges}")` : undefined}
+              autoHeight
+              defaultHeight={50}
+            />
+```
 
 ## License
 
