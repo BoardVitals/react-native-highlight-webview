@@ -57,7 +57,10 @@ class MyWebComponent extends Component {
 }
 ```
 
-## For ease of use we have created a component to wrap this webview called HighlightWebView. This component will pass the html string as a source and the previous highlight ranges found as a prop so rangy library is able to load them on top of the original stem. onHtmlChanged callback includes the new stem and the new highlight ranges. Since we only need the ranges for rangy to create the highlights, we don't store the new stems in the server, only the new ranges. At some point we can remove the stem field from the highlights reducer. This component also takes care of automatically detecting the height the html document will need and adding styles to the stem that can be modified according to the specs.
+## For ease of use we have created a component to wrap this webview called HighlightWebView. This component will pass the html string as a source and the previous highlight ranges found as a prop so rangy library is able to load them on top of the original stem. onHtmlChanged callback includes the new stem and the new highlight ranges. Since we only need the ranges for rangy to create the highlights, we don't store the new stems in the server, only the new ranges. At some point we can remove the stem field from the highlights reducer. 
+## This component also takes care of automatically detecting the height the html document will need and adding styles to the stem that can be modified according to the specs.
+
+## Added a new prop to disable all the clipboard actions when it is passed: clipboardDisabled. This can be used for the answers section of the Question screen. 
 
 Example of usage:
 
