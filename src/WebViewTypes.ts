@@ -228,7 +228,7 @@ export interface CommonNativeWebViewProps extends ViewProps {
   mediaPlaybackRequiresUserAction?: boolean;
   messagingEnabled: boolean;
   highlightEnabled: boolean;
-  clipboardDisabled?: boolean;
+  clipboardDisabled: boolean;
   onScroll?: (event: NativeScrollEvent) => void;
   onLoadingError: (event: WebViewErrorEvent) => void;
   onLoadingFinish: (event: WebViewNavigationEvent) => void;
@@ -619,7 +619,7 @@ export interface WebViewSharedProps extends ViewProps {
 
   highlightEnabled?: boolean;
 
-  clipboardDisabled?: boolean;
+  clipboardDisabled: boolean;
 
   /**
    * Stylesheet object to set the style of the container view.
