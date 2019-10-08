@@ -38,7 +38,7 @@
             [menu setMenuItems:[NSArray arrayWithObjects:menuItem,nil]];
             [menu setMenuVisible:YES animated:NO];
         }
-        else{
+        else{ // Highlighted => Removing highlight
             UIMenuItem *menuItem2 = [[UIMenuItem alloc] initWithTitle:@"Remove Highlight"
                                                                action:@selector(removeHighlight:)];
             [menu setMenuItems:[NSArray arrayWithObjects:menuItem2,nil]];
@@ -56,10 +56,11 @@
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
     if (self.highlightEnabled){
-        //TODO: Show HIGHLIGHT / REMOVE HIGHLIGHT
         if (action == @selector(selectAll:) || action == @selector(highlight:) || action == @selector(removeHighlight:)) {
             return YES;
         }
+        return NO;
+    } else if (self.clipboardDisabled){
         return NO;
     }
     return YES;

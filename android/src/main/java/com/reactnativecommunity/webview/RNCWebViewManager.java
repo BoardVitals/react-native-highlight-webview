@@ -415,6 +415,11 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     ((RNCWebView) view).setHighlightEnabled(enabled);
   }
 
+  @ReactProp(name = "clipboardDisabled")
+  public void setClipboardDisabled(WebView view, boolean disabled) {
+    ((RNCWebView) view).setClipboardDisabled(disabled);
+  }
+
   @ReactProp(name = "messagingEnabled")
   public void setMessagingEnabled(WebView view, boolean enabled) {
     ((RNCWebView) view).setMessagingEnabled(enabled);
@@ -1005,12 +1010,14 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     protected boolean messagingEnabled = false;
     /**BV**/
     protected boolean highlightEnabled = false;
+    protected boolean clipboardDisabled = false;
     protected @Nullable
     RNCWebViewClient mRNCWebViewClient;
     protected boolean sendContentSizeChangeEvents = false;
     private OnScrollDispatchHelper mOnScrollDispatchHelper;
     protected boolean hasScrollEvent = false;
     private ActionMode.Callback mActionModeCallback;
+    private ActionMode.Callback mActionModeCallback2;
 
     /**BV**/
     public static StringBuffer removeUTFCharacters(String data) {
@@ -1030,6 +1037,9 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
       if (highlightEnabled) {
         mActionModeCallback = new CustomActionModeCallback();
         return super.startActionModeForChild(originalView, mActionModeCallback);
+      } else if (clipboardDisabled) {
+        mActionModeCallback2 = new DisabledActionModeCallback();
+        return super.startActionModeForChild(originalView, mActionModeCallback2);
       }
       return super.startActionModeForChild(originalView, callback);
     }
@@ -1039,6 +1049,9 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
       if (highlightEnabled) {
         mActionModeCallback = new CustomActionModeCallback();
         return super.startActionMode(mActionModeCallback);
+      } else if (clipboardDisabled) {
+        mActionModeCallback2 = new DisabledActionModeCallback();
+        return super.startActionMode(mActionModeCallback2);
       }
       return super.startActionMode(callback);
     }
@@ -1048,6 +1061,9 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
       if (highlightEnabled) {
         mActionModeCallback = new CustomActionModeCallback();
         return super.startActionMode(mActionModeCallback, type);
+      } else if (clipboardDisabled) {
+        mActionModeCallback2 = new DisabledActionModeCallback();
+        return super.startActionMode(mActionModeCallback2, type);
       }
       return super.startActionMode(callback, type);
     }
@@ -1143,6 +1159,39 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
       }
     }
 
+    private class DisabledActionModeCallback implements ActionMode.Callback {
+
+      // Called when the action mode is created; startActionMode() was called
+      @Override
+      public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        // Inflate a menu resource providing context menu items
+        menu.clear();
+        return true;
+      }
+
+      // Called each time the action mode is shown.
+      // Always called after onCreateActionMode, but
+      // may be called multiple times if the mode is invalidated.
+      @Override
+      public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        return false;
+      }
+
+      // Called when the user selects a contextual menu item
+      @Override
+      public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+          mode.finish();
+          return false;
+      }
+
+
+      // Called when the user exits the action mode
+      @Override
+      public void onDestroyActionMode(ActionMode mode) {
+        clearFocus(); // This is the new code to remove the text highlight
+      }
+    }
+
     /**
      * WebView must be created with an context of the current activity
      * <p>
@@ -1223,6 +1272,15 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
       }
 
       highlightEnabled = enabled;
+    }
+
+    @SuppressLint("AddJavascriptInterface")
+    public void setClipboardDisabled(boolean disabled) {
+      if (clipboardDisabled == disabled) {
+        return;
+      }
+
+      clipboardDisabled = disabled;
     }
 
     @SuppressLint("AddJavascriptInterface")

@@ -46,10 +46,11 @@ class MyWebComponent extends Component {
       <WebView
               onHtmlChanged={event => this.props.highlightCreateOrUpdate(quizId, questionId, event.nativeEvent.data, event.nativeEvent.ranges)}
                style={{ flex: 0, width: 400, height: 200 }}
-               source={{html: highlightFound ? highlightFound.stem : question.get('safe_name')}}
-               injectedJavaScript={highlightFound ? `setHighlights("${highlightFound.ranges}")` : null}
+               source={{html: question.get('safe_name')}}
+               injectedJavaScript={highlightFound ? `setHighlights("${highlightFound.ranges}")` : undefined}
                originWhitelist={'*'}
                javaScriptEnabled
+               clipboardDisabled={false}
             />
     );
   }

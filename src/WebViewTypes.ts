@@ -227,7 +227,6 @@ export interface CommonNativeWebViewProps extends ViewProps {
   injectedRanges?: string;
   mediaPlaybackRequiresUserAction?: boolean;
   messagingEnabled: boolean;
-  highlightEnabled: boolean;
   onScroll?: (event: NativeScrollEvent) => void;
   onLoadingError: (event: WebViewErrorEvent) => void;
   onLoadingFinish: (event: WebViewNavigationEvent) => void;
@@ -237,6 +236,8 @@ export interface CommonNativeWebViewProps extends ViewProps {
   onMessage: (event: WebViewMessageEvent) => void;
   /**BV**/
   onHtmlChanged: (event: WebViewHtmlChangedEvent) => void;
+  highlightEnabled: boolean;
+  clipboardDisabled: boolean;
   onShouldStartLoadWithRequest: (event: WebViewNavigationEvent) => void;
   showsHorizontalScrollIndicator?: boolean;
   showsVerticalScrollIndicator?: boolean;
@@ -720,6 +721,9 @@ export interface WebViewSharedProps extends ViewProps {
    * to tap them before they start playing. The default value is `true`.
    */
   mediaPlaybackRequiresUserAction?: boolean;
+
+
+  clipboardDisabled?: boolean;
 
   /**
    * List of origin strings to allow being navigated to. The strings allow

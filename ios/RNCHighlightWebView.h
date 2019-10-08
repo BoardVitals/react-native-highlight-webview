@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (weak, nonatomic) id<RNCHighlightWebViewDelegate> delegate;
 @property (nonatomic, assign) BOOL highlightEnabled;
+@property (nonatomic, assign) BOOL clipboardDisabled;
 
 - (instancetype)initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration *)configuration highlightEnabled:(BOOL)highlight;
 

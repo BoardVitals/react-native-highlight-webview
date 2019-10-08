@@ -252,6 +252,7 @@ static NSDictionary* customCertificatesForHost;
     _webView = [[RNCHighlightWebView alloc] initWithFrame:self.bounds configuration: wkWebViewConfig highlightEnabled:_highlightEnabled];
     _webView.delegate = self;
     _webView.highlightEnabled = _highlightEnabled;
+    _webView.clipboardDisabled = _clipboardDisabled;
     [self setBackgroundColor: _savedBackgroundColor];
     _webView.scrollView.delegate = self;
     _webView.UIDelegate = self;
