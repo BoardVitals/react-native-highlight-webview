@@ -227,6 +227,8 @@ export interface CommonNativeWebViewProps extends ViewProps {
   injectedRanges?: string;
   mediaPlaybackRequiresUserAction?: boolean;
   messagingEnabled: boolean;
+  highlightEnabled: boolean;
+  clipboardDisabled?: boolean;
   onScroll?: (event: NativeScrollEvent) => void;
   onLoadingError: (event: WebViewErrorEvent) => void;
   onLoadingFinish: (event: WebViewNavigationEvent) => void;
@@ -236,8 +238,6 @@ export interface CommonNativeWebViewProps extends ViewProps {
   onMessage: (event: WebViewMessageEvent) => void;
   /**BV**/
   onHtmlChanged: (event: WebViewHtmlChangedEvent) => void;
-  highlightEnabled: boolean;
-  clipboardDisabled: boolean;
   onShouldStartLoadWithRequest: (event: WebViewNavigationEvent) => void;
   showsHorizontalScrollIndicator?: boolean;
   showsVerticalScrollIndicator?: boolean;
@@ -619,6 +619,8 @@ export interface WebViewSharedProps extends ViewProps {
 
   highlightEnabled?: boolean;
 
+  clipboardDisabled?: boolean;
+
   /**
    * Stylesheet object to set the style of the container view.
    */
@@ -722,8 +724,6 @@ export interface WebViewSharedProps extends ViewProps {
    */
   mediaPlaybackRequiresUserAction?: boolean;
 
-
-  clipboardDisabled?: boolean;
 
   /**
    * List of origin strings to allow being navigated to. The strings allow
