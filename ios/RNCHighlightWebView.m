@@ -32,23 +32,24 @@
                                                   object:nil];
     
     UIMenuController *menu = [notification object];
-    CGRect frame = menu.menuFrame;
+    CGRect frame = CGRectMake(menu.menuFrame.origin.x, menu.menuFrame.origin.y - 140, menu.menuFrame.size.width, menu.menuFrame.size.height);
+    [menu setMenuVisible:NO animated:YES];
     [self evaluateJavaScript:@"document.queryCommandValue('backcolor')" completionHandler:^(id _Nullable currentColor, NSError * _Nullable error) {
         if ([currentColor isEqualToString:@"rgba(0, 0, 0, 0)"]) { // Not Highlighted => Adding highlight
             UIMenuItem *menuItem = [[UIMenuItem alloc] initWithTitle:@"Highlight"
                                                               action:@selector(highlight:)];
             [menu setMenuItems:[NSArray arrayWithObjects:menuItem,nil]];
-            [menu setArrowDirection:UIMenuControllerArrowUp];
             [menu setTargetRect:frame inView:self];
-            [menu update];
+            [menu setArrowDirection:UIMenuControllerArrowDefault];
+            [menu setMenuVisible:YES animated:YES];
         }
         else{ // Highlighted => Removing highlight
             UIMenuItem *menuItem2 = [[UIMenuItem alloc] initWithTitle:@"Remove Highlight"
                                                                action:@selector(removeHighlight:)];
             [menu setMenuItems:[NSArray arrayWithObjects:menuItem2,nil]];
-            [menu setArrowDirection:UIMenuControllerArrowUp];
             [menu setTargetRect:frame inView:self];
-            [menu update];
+            [menu setArrowDirection:UIMenuControllerArrowDefault];
+            [menu setMenuVisible:YES animated:YES];
         }
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(didReceiveMenuWillShowNotification:)
@@ -59,8 +60,7 @@
 }
 
 
-- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
-{
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
     if (self.highlightEnabled){
         if (action == @selector(highlight:) || action == @selector(removeHighlight:)) {
             return YES;
@@ -72,7 +72,7 @@
     return YES;
 }
 
-- (void) highlight:(id)sender  {
+- (void) highlight:(id)sender {
     [self evaluateJavaScript:@"highlightSelectedText()" completionHandler:^(id _Nullable newHtml, NSError * _Nullable error) {
         [self evaluateJavaScript:@"getHighlights()" completionHandler:^(id _Nullable highlights, NSError * _Nullable error) {
             if (self.delegate != nil) {
@@ -82,7 +82,7 @@
     }];
 }
 
-- (void) removeHighlight:(id)sender  {
+- (void) removeHighlight:(id)sender {
     [self evaluateJavaScript:@"removeHighlightFromSelectedText()" completionHandler:^(id _Nullable newHtml, NSError * _Nullable error) {
         [self evaluateJavaScript:@"getHighlights()" completionHandler:^(id _Nullable highlights, NSError * _Nullable error) {
             if (self.delegate != nil) {
