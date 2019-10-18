@@ -3,6 +3,8 @@ package com.reactnativecommunity.webview;
 import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import android.os.Handler;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -751,8 +753,14 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
                   reactWebView.evaluateJavascriptWithFallback("(function() {\n" + reactWebView.injectedRanges + ";\n})();");
             }
             //Finally call whatever injected script
-            reactWebView.callInjectedJavaScript();
-            emitFinishEvent(webView, url);
+            new Handler().postDelayed(new Runnable() {
+              @Override
+              public void run() {
+                reactWebView.callInjectedJavaScript();
+                emitFinishEvent(webView, url);
+              }
+            }, 1000 );
+
 
           } catch (final Throwable tx) {
 
