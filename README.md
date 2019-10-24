@@ -19,7 +19,7 @@ If you need the exact same WebView as the one from react-native, please use vers
 ## Getting Started
 
 ```
-$ npm install --save BoardVitals/react-native-highlight-webview#boardvitals_highlight_post_upgrade
+$ npm install --save BoardVitals/react-native-highlight-webview#master
 
 //In RN 0.60 and above the library will be autolinked, no need to do step below
 $ react-native link react-native-webview
@@ -44,7 +44,7 @@ class MyWebComponent extends Component {
   render() {
     return (
       <WebView
-              onHtmlChanged={event => this.props.highlightCreateOrUpdate(quizId, questionId, event.nativeEvent.data, event.nativeEvent.ranges)}
+              onHtmlChanged={event => this.props.highlightCreateOrUpdate(quizId, questionId, event.nativeEvent.ranges)}
                style={{ flex: 0, width: 400, height: 200 }}
                source={{html: question.get('safe_name')}}
                injectedJavaScript={highlightFound ? `setHighlights("${highlightFound.ranges}")` : undefined}
@@ -66,11 +66,11 @@ Example of usage:
 
 ```jsx
            <HighlightWebView
-              onHtmlChanged={event => this.props.highlightCreateOrUpdate(quizId, questionId, '<p></p>', event.nativeEvent.ranges)}
+              onHtmlChanged={event => this.props.highlightCreateOrUpdate(quizId, questionId, event.nativeEvent.ranges)}
               source={{html: question.get('safe_name')}}
               injectedRanges={highlightFound ? `setHighlights("${highlightFound.ranges}")` : undefined}
               autoHeight
-              defaultHeight={50}
+              defaultHeight={0}
             />
 ```
 
