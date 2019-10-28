@@ -1162,9 +1162,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
 
       // Called when the user exits the action mode
       @Override
-      public void onDestroyActionMode(ActionMode mode) {
-        clearFocus(); // This is the new code to remove the text highlight
-      }
+      public void onDestroyActionMode(ActionMode mode) {}
     }
 
     private class DisabledActionModeCallback implements ActionMode.Callback {
