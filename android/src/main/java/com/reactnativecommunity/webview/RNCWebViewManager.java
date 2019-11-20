@@ -753,14 +753,21 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
                   reactWebView.evaluateJavascriptWithFallback("(function() {\n" + reactWebView.injectedRanges + ";\n})();");
             }
             //Finally call whatever injected script
-            new Handler().postDelayed(new Runnable() {
+
+            final Handler mHandler = new Handler();
+            mHandler.postDelayed(new Runnable() {
+
               @Override
               public void run() {
-                reactWebView.callInjectedJavaScript();
-                emitFinishEvent(webView, url);
+                if (reactWebView.getContentHeight() > 0) {
+                  reactWebView.callInjectedJavaScript();
+                  emitFinishEvent(webView, url);
+                  mHandler.removeCallbacks(this);
+                } else {
+                  mHandler.postDelayed(this, 100);
+                }
               }
-            }, 1000 );
-
+            }, 500);
 
           } catch (final Throwable tx) {
 
