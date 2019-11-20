@@ -61,12 +61,12 @@
 
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-    if (self.highlightEnabled){
+    if (self.clipboardDisabled){
+        return NO;
+    } else if (self.highlightEnabled){
         if (action == @selector(highlight:) || action == @selector(removeHighlight:)) {
             return YES;
         }
-        return NO;
-    } else if (self.clipboardDisabled){
         return NO;
     }
     return YES;

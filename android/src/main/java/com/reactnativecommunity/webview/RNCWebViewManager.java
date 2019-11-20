@@ -1042,36 +1042,36 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
 
     @Override
     public ActionMode startActionModeForChild(View originalView, ActionMode.Callback callback) {
-      if (highlightEnabled) {
-        mActionModeCallback = new CustomActionModeCallback();
-        return super.startActionModeForChild(originalView, mActionModeCallback);
-      } else if (clipboardDisabled) {
+      if (clipboardDisabled) {
         mActionModeCallback2 = new DisabledActionModeCallback();
         return super.startActionModeForChild(originalView, mActionModeCallback2);
-      }
+      } else if (highlightEnabled) {
+        mActionModeCallback = new CustomActionModeCallback();
+        return super.startActionModeForChild(originalView, mActionModeCallback);
+      } 
       return super.startActionModeForChild(originalView, callback);
     }
 
     @Override
     public ActionMode startActionMode(ActionMode.Callback callback) {
-      if (highlightEnabled) {
-        mActionModeCallback = new CustomActionModeCallback();
-        return super.startActionMode(mActionModeCallback);
-      } else if (clipboardDisabled) {
+      if (clipboardDisabled) {
         mActionModeCallback2 = new DisabledActionModeCallback();
         return super.startActionMode(mActionModeCallback2);
-      }
+      } else if (highlightEnabled) {
+        mActionModeCallback = new CustomActionModeCallback();
+        return super.startActionMode(mActionModeCallback);
+      } 
       return super.startActionMode(callback);
     }
 
     @Override
     public ActionMode startActionMode(ActionMode.Callback callback, int type) {
-      if (highlightEnabled) {
-        mActionModeCallback = new CustomActionModeCallback();
-        return super.startActionMode(mActionModeCallback, type);
-      } else if (clipboardDisabled) {
+      if (clipboardDisabled) {
         mActionModeCallback2 = new DisabledActionModeCallback();
         return super.startActionMode(mActionModeCallback2, type);
+      } else if (highlightEnabled) {
+        mActionModeCallback = new CustomActionModeCallback();
+        return super.startActionMode(mActionModeCallback, type);
       }
       return super.startActionMode(callback, type);
     }
