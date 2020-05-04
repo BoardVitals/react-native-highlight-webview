@@ -28,13 +28,13 @@ import {
   NativeWebViewIOS,
   ViewManager,
   State,
-  RNCWebViewUIManager,
   WebViewHtmlChangedEvent,
+  RNCWebViewUIManagerIOS,
 } from './WebViewTypes';
 
 import styles from './WebView.styles';
 
-const UIManager = NotTypedUIManager as RNCWebViewUIManager;
+const UIManager = NotTypedUIManager as RNCWebViewUIManagerIOS;
 
 const { resolveAssetSource } = Image;
 const processDecelerationRate = (

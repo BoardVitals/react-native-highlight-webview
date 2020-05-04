@@ -12,24 +12,24 @@ import {
   NativeScrollEvent,
 } from 'react-native';
 
-export interface WebViewCommands {
-  goForward: number;
-  goBack: number;
-  reload: number;
-  stopLoading: number;
-  postMessage: number;
-  injectJavaScript: number;
-  loadUrl: number;
-  requestFocus: number;
-}
+type WebViewCommands = 'goForward' | 'goBack' | 'reload' | 'stopLoading' | 'postMessage' | 'injectJavaScript' | 'loadUrl' | 'requestFocus';
 
-export interface RNCWebViewUIManager extends UIManagerStatic {
+type AndroidWebViewCommands = 'clearHistory' | 'clearCache' | 'clearFormData';
+
+
+
+interface RNCWebViewUIManager<Commands extends string> extends UIManagerStatic {
   getViewManagerConfig: (
-    name: 'RNCWebView',
+    name: string,
   ) => {
-    Commands: WebViewCommands;
+    Commands: {[key in Commands]: number};
   };
 }
+
+export type RNCWebViewUIManagerAndroid = RNCWebViewUIManager<WebViewCommands | AndroidWebViewCommands>
+export type RNCWebViewUIManagerIOS = RNCWebViewUIManager<WebViewCommands>
+
+
 
 type WebViewState = 'IDLE' | 'LOADING' | 'ERROR';
 
@@ -225,6 +225,7 @@ export interface CommonNativeWebViewProps extends ViewProps {
   incognito?: boolean;
   injectedJavaScript?: string;
   injectedRanges?: string;
+  injectedJavaScriptBeforeContentLoaded?: string;
   mediaPlaybackRequiresUserAction?: boolean;
   messagingEnabled: boolean;
   highlightEnabled: boolean;
@@ -479,7 +480,7 @@ export interface AndroidWebViewProps extends WebViewSharedProps {
   /**
    * https://developer.android.com/reference/android/webkit/WebSettings.html#setCacheMode(int)
    * Set the cacheMode. Possible values are:
-   * 
+   *
    * - `'LOAD_DEFAULT'` (default)
    * - `'LOAD_CACHE_ELSE_NETWORK'`
    * - `'LOAD_NO_CACHE'`
@@ -516,13 +517,13 @@ export interface AndroidWebViewProps extends WebViewSharedProps {
 
   
   /**
-   * Boolean that sets whether JavaScript running in the context of a file 
-   * scheme URL should be allowed to access content from other file scheme URLs. 
+   * Boolean that sets whether JavaScript running in the context of a file
+   * scheme URL should be allowed to access content from other file scheme URLs.
    * Including accessing content from other file scheme URLs
    * @platform android
    */
   allowFileAccessFromFileURLs?: boolean;
-  
+
   /**
    * Boolean that sets whether JavaScript running in the context of a file
    * scheme URL should be allowed to access content from any origin.
@@ -705,6 +706,11 @@ export interface WebViewSharedProps extends ViewProps {
   injectedJavaScript?: string;
 
   injectedRanges?: string;
+  /**
+   * Set this to provide JavaScript that will be injected into the web page
+   * once the webview is initialized but before the view loads any content.
+   */
+  injectedJavaScriptBeforeContentLoaded?: string;
 
   /**
    * Boolean value that determines whether a horizontal scroll indicator is

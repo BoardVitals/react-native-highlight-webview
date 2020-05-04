@@ -19,6 +19,11 @@
 
 @end
 
+@interface RNCWeakScriptMessageDelegate : NSObject<WKScriptMessageHandler>
+@property (nonatomic, weak) id<WKScriptMessageHandler> scriptDelegate;
+- (instancetype)initWithDelegate:(id<WKScriptMessageHandler>)scriptDelegate;
+@end
+
 @interface RNCWebView : RCTView
 
 @property (nonatomic, weak) id<RNCWebViewDelegate> _Nullable delegate;
@@ -28,6 +33,7 @@
 @property (nonatomic, assign) BOOL highlightEnabled;
 @property (nonatomic, copy) NSString * _Nullable injectedJavaScript;
 @property (nonatomic, copy) NSString * _Nullable injectedRanges;
+@property (nonatomic, copy) NSString * _Nullable injectedJavaScriptBeforeContentLoaded;
 @property (nonatomic, assign) BOOL scrollEnabled;
 @property (nonatomic, assign) BOOL sharedCookiesEnabled;
 @property (nonatomic, assign) BOOL pagingEnabled;
@@ -50,6 +56,7 @@
 @property (nonatomic, copy) NSString * _Nullable applicationNameForUserAgent;
 @property (nonatomic, assign) BOOL cacheEnabled;
 @property (nonatomic, assign) BOOL javaScriptEnabled;
+@property (nonatomic, assign) BOOL allowFileAccessFromFileURLs;
 @property (nonatomic, assign) BOOL allowsLinkPreview;
 @property (nonatomic, assign) BOOL showsHorizontalScrollIndicator;
 @property (nonatomic, assign) BOOL showsVerticalScrollIndicator;
