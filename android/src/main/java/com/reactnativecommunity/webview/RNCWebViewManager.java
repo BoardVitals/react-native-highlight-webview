@@ -1000,11 +1000,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     }
 
     @Override
-    public void onHostPause() {
-      if (getSettings().getJavaScriptEnabled()) {
-        evaluateJavascriptWithFallback("(function(){document.getElementsByTagName('video')[0].pause();})()");
-      }
-    }
+    public void onHostPause() { }
 
     @Override
     public void onHostDestroy() { }
@@ -1227,7 +1223,9 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
 
     @Override
     public void onHostPause() {
-      // do nothing
+      if (getSettings().getJavaScriptEnabled()) {
+        evaluateJavascriptWithFallback("(function(){document.getElementsByTagName('video')[0].pause();})()");
+      }
     }
 
     @Override
