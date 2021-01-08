@@ -1224,6 +1224,7 @@ public class RNCWebViewManager extends SimpleViewManager<WebView> {
     @Override
     public void onHostPause() {
       if (getSettings().getJavaScriptEnabled()) {
+        evaluateJavascriptWithFallback("(function(){document.getElementsByTagName('video')[0].webkitExitFullScreen();})()");
         evaluateJavascriptWithFallback("(function(){document.getElementsByTagName('video')[0].pause();})()");
       }
     }
